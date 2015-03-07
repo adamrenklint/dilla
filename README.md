@@ -109,3 +109,7 @@ dilla.on('step', function (step) {
 
 dilla.start();
 ```
+
+## License
+
+MIT © [Adam Renklint](http://adamrenklint.com)
