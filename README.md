@@ -1,5 +1,5 @@
 # dilla
-schedule looped playback of Web Audio events at 96 ticks per beat
+Schedule looped playback of Web Audio events at 96 ticks per beat
 
 Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper).
 

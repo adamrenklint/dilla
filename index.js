@@ -79,7 +79,14 @@ function emitStep (step) {
 
 function set (id, events) {
   var self = this;
-  events = events.map(function (event) {
+  events = events.filter(function (event) {
+    var parts = event[0].split('.');
+    var bars = parseInt(parts[0], 10) - 1;
+    var beats = parseInt(parts[1], 10) - 1;
+    var ticks = parseInt(parts[2], 10) - 1;
+    if (ticks >= 96 || beats >= self.beatsPerBar || bars >= self.loopLength) return false;
+    return true;
+  }).map(function (event) {
     return [self.getClockPositionFromPosition(event[0]), self.getDurationFromTicks(event[1]), null, null, event[0], event[1]].concat(event.slice(2));
   });
   this.scheduler.set(id, events, this.beatsPerBar * this.loopLength);

@@ -27,7 +27,6 @@ draw();
 var oscillator, gainNode;
 
 dilla.on('step', function (step) {
-  console.log(step);
   if (step.event === 'start') {
     oscillator = step.context.createOscillator();
     gainNode = step.context.createGain();
