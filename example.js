@@ -2,7 +2,7 @@ var Dilla = require('./index');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
-var duration = 10;
+var duration = 15;
 dilla.set('metronome', [
   ['1.1.01', duration, 440],
   ['1.2.01', duration, 330],
@@ -24,21 +24,23 @@ function draw () {
 }
 draw();
 
-var oscillator = null;
+var oscillator, gainNode;
 
 dilla.on('step', function (step) {
   if (step.event === 'start') {
     oscillator = step.context.createOscillator();
-    oscillator.connect(step.context.destination);
+    gainNode = step.context.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(step.context.destination);
     oscillator.frequency.value = step.args[2];
+    gainNode.gain.setValueAtTime(1, step.time);
     oscillator.start(step.time);
   }
   else if (step.event === 'stop' && oscillator) {
-    oscillator.stop(step.time);
+    gainNode.gain.linearRampToValueAtTime(0, step.time);
     oscillator = null;
+    gainNode = null;
   }
 });
 
 dilla.start();
-
-window.d = dilla;
