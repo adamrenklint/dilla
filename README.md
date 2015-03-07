@@ -33,13 +33,14 @@ var dilla = new Dilla(audioContext, options);
 #### dilla.pause()
 #### dilla.stop()
 
-#### dilla.position
-#### dilla.setPosition();
-
 #### dilla.set(id, events)
-#### dilla.clear(id)
 #### dilla.get(id)
+#### dilla.getIds()
+#### dilla.clear(id)
+#### dilla.clear()
 
+#### dilla.position
+#### dilla.setPosition(position)
 #### dilla.setTempo(tempo)
 #### dilla.setBeatsPerBar(beats)
 #### dilla.setLoopLength(bars)

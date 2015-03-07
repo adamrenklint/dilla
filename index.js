@@ -85,6 +85,26 @@ function set (id, events) {
   this.scheduler.set(id, events, this.beatsPerBar * this.loopLength);
 }
 
+function get (id) {
+  return this.scheduler.get(id);
+}
+
+function getIds () {
+  return this.scheduler.getIds();
+}
+
+function clear (id) {
+  var self = this;
+  if (id) {
+    this.set(id, []);
+  }
+  else {
+    this.scheduler.getIds().forEach(function (id) {
+      self.clear(id);
+    });
+  }
+}
+
 function start () {
   var now = new Date().valueOf();
   var waited = now - loadTime;
@@ -128,7 +148,7 @@ function setLoopLength (bars) {
 }
 
 var proto = Dilla.prototype;
-[set, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength].forEach(function (fn) {
+[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength].forEach(function (fn) {
   proto[fn.name] = fn;
 });
 
