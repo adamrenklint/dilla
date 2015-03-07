@@ -49,26 +49,29 @@ var dilla = new Dilla(audioContext, options);
 
 #### tick
 
+Fires when the bar, beat or tick value of ```dilla.position``` is updated.
+
 ```
-dilla.on('tick', function (data) {
-  //fires as close to when the tick is actually updated, as possible
-  data.bar, data.beat, data.tick
-  data.position:string
+dilla.on('tick', function (tick) {
+  console.log(tick.position) // "1.1.01"
 });
 ```
 
 #### step
 
+Fires when a scheduled event should start or stop.
+
 ```
-dilla.on('step', function (data) {
-  // piped through scheduler, fired with scheduled events
-  data.event (start/stop), data.time, data.length, data.args
+dilla.on('step', function (step) {
+  console.log(step.event); // "start" or "stop"
+  console.log(step.time); // offset in seconds
+  console.log(step.args); // data originally passed to set()
 });
 ```
 
 ### Example: metronome
 
-The "hello world" of audio libraries is usually a simple metronome, so here's a full example. This example can be run by forking this repo and running [make example](https://github.com/adamrenklint/dilla/blob/master/example.js).
+The "hello world" of audio libraries, the simple metronome. This full example can be run by forking this repo and running [make example](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
 ```
 var duration = 15;
