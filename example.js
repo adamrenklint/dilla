@@ -2,7 +2,7 @@ var Dilla = require('./index');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
-var duration = 15;
+var duration = 24;
 dilla.set('metronome', [
   ['1.1.01', duration, 440],
   ['1.2.01', duration, 330],
@@ -27,6 +27,7 @@ draw();
 var oscillator, gainNode;
 
 dilla.on('step', function (step) {
+  console.log(step);
   if (step.event === 'start') {
     oscillator = step.context.createOscillator();
     gainNode = step.context.createGain();
