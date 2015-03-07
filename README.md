@@ -68,7 +68,39 @@ dilla.on('step', function (data) {
 
 ### Example: metronome
 
+The "hello world" of audio libraries is usually a simple metronome, so here's a full example. This example can be run by forking this repo and running [make example](https://github.com/adamrenklint/dilla/blob/master/example.js).
+
 ```
-example for metronome, also in examples/metronome/js
-run with make example-metronome
+var duration = 15;
+var oscillator, gainNode;
+
+dilla.set('metronome', [
+  ['1.1.01', duration, 440],
+  ['1.2.01', duration, 330],
+  ['1.3.01', duration, 330],
+  ['1.4.01', duration, 330],
+  ['2.1.01', duration, 440],
+  ['2.2.01', duration, 330],
+  ['2.3.01', duration, 330],
+  ['2.4.01', duration, 330]
+]);
+
+dilla.on('step', function (step) {
+  if (step.event === 'start') {
+    oscillator = step.context.createOscillator();
+    gainNode = step.context.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(step.context.destination);
+    oscillator.frequency.value = step.args[2];
+    gainNode.gain.setValueAtTime(1, step.time);
+    oscillator.start(step.time);
+  }
+  else if (step.event === 'stop' && oscillator) {
+    gainNode.gain.linearRampToValueAtTime(0, step.time);
+    oscillator = null;
+    gainNode = null;
+  }
+});
+
+dilla.start();
 ```
