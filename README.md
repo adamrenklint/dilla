@@ -23,9 +23,11 @@ var dilla = new Dilla(audioContext, options);
 {
   "tempo": 120,
   "beatsPerBar": 4,
-  "loopLength": 2 // bars
+  "loopLength": 2
 }
 ```
+
+Note that ```loopLength``` is measured in bars, i.e. the default loop length above is 8 beats.
 
 ### API
 
