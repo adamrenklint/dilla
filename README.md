@@ -33,7 +33,8 @@ var dilla = new Dilla(audioContext, options);
 #### dilla.pause()
 #### dilla.stop()
 
-#### dilla.position()
+#### dilla.position
+#### dilla.setPosition();
 
 #### dilla.set(id, events)
 #### dilla.clear(id)
@@ -67,5 +68,6 @@ dilla.on('step', function (data) {
 ### Example: metronome
 
 ```
-example for metronome, also in examples/metronome.html/js
+example for metronome, also in examples/metronome/js
+run with make example-metronome
 ```
