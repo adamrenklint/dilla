@@ -11,7 +11,7 @@ $ npm install --save dilla
 
 ## Usage
 
-```
+```javascript
 var Dilla = require('dilla');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext, options);
@@ -19,11 +19,11 @@ var dilla = new Dilla(audioContext, options);
 
 #### Options and defaults
 
-```
+```json
 {
-  'tempo': 120,
-  'beatsPerBar': 4,
-  'loopLength': 2 // bars
+  "tempo": 120,
+  "beatsPerBar": 4,
+  "loopLength": 2 // bars
 }
 ```
 
@@ -51,7 +51,7 @@ var dilla = new Dilla(audioContext, options);
 
 Fires when the bar, beat or tick value of ```dilla.position``` is updated.
 
-```
+```javascript
 dilla.on('tick', function (tick) {
   console.log(tick.position) // "1.1.01"
 });
@@ -61,7 +61,7 @@ dilla.on('tick', function (tick) {
 
 Fires when a scheduled event should start or stop.
 
-```
+```javascript
 dilla.on('step', function (step) {
   console.log(step.event); // "start" or "stop"
   console.log(step.time); // offset in seconds
@@ -73,7 +73,7 @@ dilla.on('step', function (step) {
 
 The "hello world" of audio libraries, the simple metronome. This full example can be run by forking this repo and running [make example](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
-```
+```javascript
 var duration = 15;
 var oscillator, gainNode;
 
