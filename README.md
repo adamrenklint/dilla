@@ -49,7 +49,7 @@ Note that ```loopLength``` is measured in bars, i.e. the default loop length abo
 
 - **dilla.position** returns current position string, ```"BAR.BEAT.TICK"```
 - **dilla.setPosition(position)** set position to ```"BAR.BEAT.TICK"```
-- **dilla.setTempo(bpm)** set playback tempo
+- **dilla.setTempo(bpm)** set playback tempo, default ```120```
 - **dilla.setBeatsPerBar(beats)** change playback time signature, default ```4```
 - **dilla.setLoopLength(bars)** change bars per loop, default ```2```
 

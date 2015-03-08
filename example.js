@@ -14,12 +14,8 @@ dilla.set('metronome', [
   ['2.4.01', duration, 330]
 ]);
 
-// dilla.on('tick', function (tick) {
-//   document.body.innerText = tick.position;
-// });
-
 function draw () {
-  document.body.innerText = dilla.position;
+  document.body.innerText = dilla.position();
   window.requestAnimationFrame(draw);
 }
 draw();

@@ -19,7 +19,7 @@ function Dilla (audioContext, options) {
   this.tempo = options.tempo || 120;
   this.beatsPerBar = options.beatsPerBar || 4;
   this.loopLength = options.loopLength || 2;
-  this.position = '0.0.00';
+  this._position = '0.0.00';
   
   this.context = audioContext;
   this.clock = bopper(this.context);
@@ -34,9 +34,9 @@ inherits(Dilla, events.EventEmitter);
 
 function updatePositionFromClock (step) {
   var position = this.getPositionFromTime(step.time);
-  if (this.position !== position) {
-    this.position = position;
-    this.emit('tick', { 'position': this.position, 'context': this.context });
+  if (this._position !== position) {
+    this._position = position;
+    this.emit('tick', { 'position': this._position, 'context': this.context });
   }
 }
 
@@ -134,8 +134,12 @@ function stop () {
   if (this.clock._state.playing) {
     this.clock.stop();
     this.clock.setPosition(0);
-    this.position = '0.0.00';
+    this._position = '0.0.00';
   }
+}
+
+function position () {
+  return this._position;
 }
 
 function setPosition (position) {
@@ -155,7 +159,7 @@ function setLoopLength (bars) {
 }
 
 var proto = Dilla.prototype;
-[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength, channels].forEach(function (fn) {
+[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength, channels, position].forEach(function (fn) {
   proto[fn.name] = fn;
 });
 
