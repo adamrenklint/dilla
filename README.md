@@ -79,7 +79,7 @@ dilla.on('step', function (step) {
 
 ### Example: metronome
 
-The "hello world" of audio libraries, the simple metronome. This full example can be run by forking this repo and running [make example](https://github.com/adamrenklint/dilla/blob/master/example.js).
+The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
 ```javascript
 var duration = 15;
@@ -115,6 +115,11 @@ dilla.on('step', function (step) {
 
 dilla.start();
 ```
+
+## Changelog
+
+- **0.1.0**
+  - Initial release, ported from **bap** project
 
 ## License
 
