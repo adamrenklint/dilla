@@ -2,7 +2,7 @@ var Dilla = require('./index');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
-var duration = 24;
+var duration = 15;
 dilla.set('metronome', [
   ['1.1.01', duration, 440],
   ['1.2.01', duration, 330],
@@ -33,7 +33,8 @@ dilla.on('step', function (step) {
     oscillator.start(step.time);
   }
   else if (step.event === 'stop' && oscillator) {
-    gainNode.gain.linearRampToValueAtTime(0, step.time);
+    gainNode.gain.setValueAtTime(1, step.time);
+    gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
     oscillator = null;
     gainNode = null;
   }
