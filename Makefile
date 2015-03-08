@@ -14,6 +14,6 @@ tag:
 ghpages:
 	@git checkout gh-pages && git merge master
 	@node_modules/browserify/bin/cmd.js example.js -o metronome.js
-	@git commit -am "update example"
+	@git commit -am --allow-empty "update example"
 	@git push origin gh-pages
 	@git checkout master
