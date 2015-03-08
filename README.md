@@ -107,7 +107,8 @@ dilla.on('step', function (step) {
     oscillator.start(step.time);
   }
   else if (step.event === 'stop' && oscillator) {
-    gainNode.gain.linearRampToValueAtTime(0, step.time);
+    gainNode.gain.setValueAtTime(1, step.time);
+    gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
     oscillator = null;
     gainNode = null;
   }
@@ -120,6 +121,9 @@ dilla.start();
 
 - **0.1.0**
   - Initial release, ported from **bap** project
+- **1.0.0**
+  - Improved release for metronome example oscillator
+  - Warn in console when events provided to ```dilla.set()``` is out of bounds
 
 ## License
 
