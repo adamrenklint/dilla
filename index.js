@@ -96,7 +96,7 @@ function get (id) {
   return this.scheduler.get(id);
 }
 
-function getIds () {
+function channels () {
   return this.scheduler.getIds();
 }
 
@@ -155,7 +155,7 @@ function setLoopLength (bars) {
 }
 
 var proto = Dilla.prototype;
-[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength].forEach(function (fn) {
+[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength, channels].forEach(function (fn) {
   proto[fn.name] = fn;
 });
 
