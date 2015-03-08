@@ -13,6 +13,6 @@ tag:
 
 ghpages:
 	@git checkout gh-pages && git merge master
-	@node_modules/browserify/bin/cmd.js example.js -o index.js
+	@node_modules/browserify/bin/cmd.js example.js -o metronome.js
 	@git commit -am "update example"
 	@git push origin gh-pages
