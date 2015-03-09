@@ -88,6 +88,10 @@ function updatePositionFromClock (step) {
 function getPositionFromTime (time) {
   var offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
   var position = this.clock.getPositionAt(time - offset);
+  return this.getPositionFromClockPosition(position);
+}
+
+function getPositionFromClockPosition (position) {
   if (position < 0) return '0.0.00';
   var beatsPerLoop = this.loopLength * this.beatsPerBar;
   var loops = Math.floor(position / beatsPerLoop) || 0;
@@ -106,7 +110,13 @@ function getClockPositionFromPosition (position) {
   var bars = parseInt(parts[0], 10) - 1;
   var beats = parseInt(parts[1], 10) - 1;
   var ticks = parseInt(parts[2], 10) - 1;
-  return (bars * this.beatsPerBar) + beats + (ticks / 96 * 100);
+  return (bars * this.beatsPerBar) + beats + (ticks / 96);
+}
+
+function getPositionWithOffset (position, offset) {
+  var clockPosition = this.getClockPositionFromPosition(position);
+  var clockOffset = offset / 96;
+  return this.getPositionFromClockPosition(clockPosition + clockOffset);
 }
 
 function getDurationFromTicks (ticks) {
@@ -117,7 +127,7 @@ function emitStep (step) {
   var offset = step.offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
   step.time = step.time + offset;
   step.clockPosition = step.position;
-  step.position = this.getPositionFromTime(step.time);
+  step.position = step.event === 'start' ? step.args[0] : this.getPositionWithOffset(step.args[0], step.args[1]);
   step.context = this.context;
   this.emit('step', step);
 }
@@ -207,7 +217,7 @@ function setLoopLength (bars) {
 }
 
 var proto = Dilla.prototype;
-[set, get, clear, start, stop, pause, getPositionFromTime, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, setBeatsPerBar, setLoopLength, channels, position].forEach(function (fn) {
+[set, get, clear, start, stop, pause, getPositionFromTime, getPositionFromClockPosition, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, getPositionWithOffset, setBeatsPerBar, setLoopLength, channels, position].forEach(function (fn) {
   proto[fn.name] = fn;
 });
 
