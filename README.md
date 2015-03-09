@@ -124,6 +124,9 @@ dilla.start();
 - **1.0.0**
   - Improved release for metronome example oscillator
   - Warn in console when events provided to ```dilla.set()``` is out of bounds
+- **1.0.1**
+  - FIXED: ```dilla.getClockPositionFromPosition()``` returns incorrect value for ticks [#4](https://github.com/adamrenklint/dilla/issues/4)
+  - FIXED: ```step.position``` is incorrect [#1](https://github.com/adamrenklint/dilla/issues/1)
 
 ## License
 
