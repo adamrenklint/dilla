@@ -61,7 +61,7 @@ function getClockPositionFromPosition (position) {
   var bars = parseInt(parts[0], 10) - 1;
   var beats = parseInt(parts[1], 10) - 1;
   var ticks = parseInt(parts[2], 10) - 1;
-  return (bars * this.beatsPerBar) + beats + (ticks / 96 * 100);
+  return (bars * this.beatsPerBar) + beats + (ticks / 96);
 }
 
 function getDurationFromTicks (ticks) {
