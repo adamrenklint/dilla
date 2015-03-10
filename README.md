@@ -127,6 +127,9 @@ dilla.start();
 - **1.0.1**
   - FIXED: ```dilla.getClockPositionFromPosition()``` returns incorrect value for ticks [#4](https://github.com/adamrenklint/dilla/issues/4)
   - FIXED: ```step.position``` is incorrect [#1](https://github.com/adamrenklint/dilla/issues/1)
+- **1.0.2**
+  - FIXED: ```dilla.getPositionWithOffset()``` returns incorrect position when offset is falsy [#5](https://github.com/adamrenklint/dilla/issues/5)
+  - FIXED: ```"stop"``` fires for events with falsy duration (oneshots) [#3](https://github.com/adamrenklint/dilla/issues/3)
 
 ## License
 
