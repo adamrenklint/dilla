@@ -97,7 +97,7 @@ function set (id, events) {
     var beats = parseInt(parts[1], 10) - 1;
     var ticks = parseInt(parts[2], 10) - 1;
     if (ticks >= 96 || beats >= self.beatsPerBar || bars >= self.loopLength) {
-      console.warn('Event is out of bounds: ' + event[0], event);
+      console.warn('[%s] event is out of bounds: %s', id, event[0], event);
       return false; 
     }
     return true;
