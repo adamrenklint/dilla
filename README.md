@@ -1,5 +1,9 @@
 # dilla
-Schedule looped playback of Web Audio events at 96 ticks per beat
+
+[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
+
+
+> Schedule looped playback of Web Audio events at 96 ticks per beat
 
 Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper).
 
