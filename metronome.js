@@ -114,6 +114,7 @@ function getClockPositionFromPosition (position) {
 }
 
 function getPositionWithOffset (position, offset) {
+  if (!offset) return position;
   var clockPosition = this.getClockPositionFromPosition(position);
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
@@ -128,6 +129,7 @@ function emitStep (step) {
   step.time = step.time + offset;
   step.clockPosition = step.position;
   step.position = step.event === 'start' ? step.args[0] : this.getPositionWithOffset(step.args[0], step.args[1]);
+  if (step.event === 'stop'  && step.position === step.args[0]) return;
   step.context = this.context;
   this.emit('step', step);
 }
