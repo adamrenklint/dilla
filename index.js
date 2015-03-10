@@ -69,6 +69,7 @@ function getClockPositionFromPosition (position) {
 }
 
 function getPositionWithOffset (position, offset) {
+  if (!offset) return position;
   var clockPosition = this.getClockPositionFromPosition(position);
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
