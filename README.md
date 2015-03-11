@@ -1,5 +1,9 @@
 # dilla
-Schedule looped playback of Web Audio events at 96 ticks per beat
+
+[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
+
+
+> Schedule looped playback of Web Audio events at 96 ticks per beat
 
 Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper).
 
@@ -40,6 +44,9 @@ Note that ```loopLength``` is measured in bars, i.e. the default loop length abo
 #### Scheduling
 
 - **dilla.set(id, events)** schedule playback of array of *events* on channel with *id*, clearing any previously scheduled events on same channel
+  - an event is an array with a position string or expression at index 0
+  - duration can be defined, in ticks, at index 1
+  - any other arguments can be defined at index 2 and beyond, and will be passed in ```step.args```
 - **dilla.get(id)** returns an array of events scheduled on channel with *id*
 - **dilla.channels()** returns an array of all channel ids
 - **dilla.clear(id)** clear events for channel
@@ -86,14 +93,10 @@ var duration = 15;
 var oscillator, gainNode;
 
 dilla.set('metronome', [
-  ['1.1.01', duration, 440],
-  ['1.2.01', duration, 330],
-  ['1.3.01', duration, 330],
-  ['1.4.01', duration, 330],
-  ['2.1.01', duration, 440],
-  ['2.2.01', duration, 330],
-  ['2.3.01', duration, 330],
-  ['2.4.01', duration, 330]
+  ['*.1.01', duration, 440],
+  ['*.2.01', duration, 330],
+  ['*.3.01', duration, 330],
+  ['*.4.01', duration, 330]
 ]);
 
 dilla.on('step', function (step) {
@@ -130,6 +133,9 @@ dilla.start();
 - **1.0.2**
   - FIXED: ```dilla.getPositionWithOffset()``` returns incorrect position when offset is falsy [#5](https://github.com/adamrenklint/dilla/issues/5)
   - FIXED: ```"stop"``` fires for events with falsy duration (oneshots) [#3](https://github.com/adamrenklint/dilla/issues/3)
+- **1.0.3**
+  - NEW: Use [expressions](https://www.npmjs.com/package/dilla-expressions) to insert repeating events [#2](https://github.com/adamrenklint/dilla/issues/2)
+  - FIXED: "Out of bounds" warning does not say which channel [#6](https://github.com/adamrenklint/dilla/issues/6)
 
 ## License
 

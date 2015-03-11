@@ -4,14 +4,10 @@ var dilla = new Dilla(audioContext);
 
 var duration = 15;
 dilla.set('metronome', [
-  ['1.1.01', duration, 440],
-  ['1.2.01', duration, 330],
-  ['1.3.01', duration, 330],
-  ['1.4.01', duration, 330],
-  ['2.1.01', duration, 440],
-  ['2.2.01', duration, 330],
-  ['2.3.01', duration, 330],
-  ['2.4.01', duration, 330]
+  ['*.1.01', duration, 440],
+  ['*.2.01', duration, 330],
+  ['*.3.01', duration, 330],
+  ['*.4.01', duration, 330]
 ]);
 
 function draw () {
