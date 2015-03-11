@@ -5,14 +5,10 @@ var dilla = new Dilla(audioContext);
 
 var duration = 15;
 dilla.set('metronome', [
-  ['1.1.01', duration, 440],
-  ['1.2.01', duration, 330],
-  ['1.3.01', duration, 330],
-  ['1.4.01', duration, 330],
-  ['2.1.01', duration, 440],
-  ['2.2.01', duration, 330],
-  ['2.3.01', duration, 330],
-  ['2.4.01', duration, 330]
+  ['*.1.01', duration, 440],
+  ['*.2.01', duration, 330],
+  ['*.3.01', duration, 330],
+  ['*.4.01', duration, 330]
 ]);
 
 function draw () {
@@ -47,6 +43,7 @@ var events = require('events');
 var inherits = require('util').inherits
 var bopper = require('bopper');
 var ditty = require('ditty');
+var expr = require('dilla-expressions');
 
 var loadTime = new Date().valueOf();
 
@@ -136,19 +133,20 @@ function emitStep (step) {
 
 function set (id, events) {
   var self = this;
-  events = events.filter(function (event) {
+  events = expr(events, this.loopLength, this.beatsPerBar).filter(function (event) {
     var parts = event[0].split('.');
     var bars = parseInt(parts[0], 10) - 1;
     var beats = parseInt(parts[1], 10) - 1;
     var ticks = parseInt(parts[2], 10) - 1;
     if (ticks >= 96 || beats >= self.beatsPerBar || bars >= self.loopLength) {
-      console.warn('Event is out of bounds: ' + event[0], event);
+      console.warn('[%s] event is out of bounds: %s', id, event[0], event);
       return false; 
     }
     return true;
   }).map(function (event) {
     return [self.getClockPositionFromPosition(event[0]), self.getDurationFromTicks(event[1]), null, null, event[0], event[1]].concat(event.slice(2));
   });
+
   this.scheduler.set(id, events, this.beatsPerBar * this.loopLength);
 }
 
@@ -224,7 +222,7 @@ var proto = Dilla.prototype;
 });
 
 module.exports = Dilla;
-},{"bopper":3,"ditty":30,"events":11,"util":29}],3:[function(require,module,exports){
+},{"bopper":3,"dilla-expressions":30,"ditty":31,"events":11,"util":29}],3:[function(require,module,exports){
 var Stream = require('stream')
 var Event = require('geval')
 
@@ -5246,6 +5244,84 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./support/isBuffer":28,"_process":14,"inherits":12}],30:[function(require,module,exports){
+function isPlainPosition (position) {
+  return !!position.match(/^\d+\.\d+\.\d+$/);
+}
+
+function getPossiblePositions (barsPerLoop, beatsPerBar) {
+  var possibles = [];
+  var bar = 0, beat, tick, displayTick;
+  while (++bar <= barsPerLoop) {
+    beat = 0;
+    while (++beat <= beatsPerBar) {
+      tick = 0;
+      while (++tick <= 96) {
+        displayTick = tick < 10 ? '0' + tick : tick;
+        possibles.push([bar, beat, displayTick].join('.'))
+      }
+    }
+  }
+  return possibles;
+}
+
+function getFragments (position) {
+  return position.split('.').map(function (fragment) {
+    var fragmentNumber = parseInt(fragment, 10);
+    if (!isNaN(fragmentNumber)) return fragmentNumber;
+    return fragment;
+  })
+}
+
+function makeExpressionFunction (expression) {
+  var exprFragments = getFragments(expression);
+  return function expressionFn (position) {
+    var positionFragments = getFragments(position);
+    var valid = true;
+    exprFragments.some(function (exprFragment, index) {
+      if (typeof exprFragment === 'number' && positionFragments[index] === exprFragment) return;
+      if (exprFragment === 'even' && positionFragments[index] % 2 === 0) return;
+      if (exprFragment === 'odd' && positionFragments[index] % 2 === 1) return;
+      if (exprFragment === '*') return;
+      // if (typeof exprFragment === 'string' && exprFragment.indexOf('%') >= 0) {
+        // console.log('deal with modulus', exprFragment, positionFragments[index])
+      // }
+      // position is invalid, break out early
+      valid = false;
+      return true;
+    });
+    return valid;
+  }
+}
+
+function expressions (events, barsPerLoop, beatsPerBar) {
+
+  if (!events) throw new Error('Invalid events array');
+  if (!barsPerLoop || typeof barsPerLoop !== 'number') throw new Error('Invalid "barsPerLoop" argument');
+  if (!beatsPerBar || typeof beatsPerBar !== 'number') throw new Error('Invalid "barsPerLoop" argument');
+
+  var possibles = getPossiblePositions(barsPerLoop, beatsPerBar);
+  var all = [];
+
+  events.forEach(function (event) {
+    
+    var position = event[0];
+    if (isPlainPosition(position)) return all.push(event);
+
+    var expressionFn = makeExpressionFunction(position);
+    possibles.filter(expressionFn).map(function (possible) {
+      var clone = event.slice();
+      clone[0] = possible;
+      all.push(clone);
+    });
+  });
+
+  return all.sort(function (a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+}
+
+module.exports = expressions;
+},{}],31:[function(require,module,exports){
 module.exports = Ditty
 
 var Stream = require('stream')
