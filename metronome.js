@@ -131,23 +131,23 @@ function emitStep (step) {
   this.emit('step', step);
 }
 
-function set (id, events) {
+function set (id, notes) {
   var self = this;
-  events = expr(events, this.loopLength, this.beatsPerBar).filter(function (event) {
-    var parts = event[0].split('.');
+  notes = expr(notes, this.loopLength, this.beatsPerBar).filter(function (note) {
+    var parts = note[0].split('.');
     var bars = parseInt(parts[0], 10) - 1;
     var beats = parseInt(parts[1], 10) - 1;
     var ticks = parseInt(parts[2], 10) - 1;
     if (ticks >= 96 || beats >= self.beatsPerBar || bars >= self.loopLength) {
-      console.warn('[%s] event is out of bounds: %s', id, event[0], event);
+      console.warn('[%s] note is out of bounds: %s', id, note[0], note);
       return false; 
     }
     return true;
-  }).map(function (event) {
-    return [self.getClockPositionFromPosition(event[0]), self.getDurationFromTicks(event[1]), null, null, event[0], event[1]].concat(event.slice(2));
+  }).map(function (note) {
+    return [self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, note[0], note[1]].concat(note.slice(2));
   });
 
-  this.scheduler.set(id, events, this.beatsPerBar * this.loopLength);
+  this.scheduler.set(id, notes, this.beatsPerBar * this.loopLength);
 }
 
 function get (id) {
@@ -5293,16 +5293,16 @@ function makeExpressionFunction (expression) {
   }
 }
 
-function expressions (events, barsPerLoop, beatsPerBar) {
+function expressions (notes, barsPerLoop, beatsPerBar) {
 
-  if (!events) throw new Error('Invalid events array');
+  if (!notes) throw new Error('Invalid "notes" array');
   if (!barsPerLoop || typeof barsPerLoop !== 'number') throw new Error('Invalid "barsPerLoop" argument');
   if (!beatsPerBar || typeof beatsPerBar !== 'number') throw new Error('Invalid "barsPerLoop" argument');
 
   var possibles = getPossiblePositions(barsPerLoop, beatsPerBar);
   var all = [];
 
-  events.forEach(function (event) {
+  notes.forEach(function (event) {
     
     var position = event[0];
     if (isPlainPosition(position)) return all.push(event);
