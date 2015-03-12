@@ -5,7 +5,7 @@
 
 > Schedule looped playback of Web Audio notes at 96 ticks per beat
 
-Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper). Named after one of [the greatest to ever touch a drum machine](http://en.wikipedia.org/wiki/J_Dilla).
+Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper). Named after one of [the greatest](http://en.wikipedia.org/wiki/J_Dilla) to ever touch a drum machine.
 
 ## Install
 
@@ -32,6 +32,42 @@ var dilla = new Dilla(audioContext, options);
 ```
 
 Note that ```loopLength``` is measured in bars, i.e. the default loop length above is 8 beats.
+
+### Example
+
+The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
+
+```javascript
+var duration = 15;
+var oscillator, gainNode;
+
+dilla.set('metronome', [
+  ['*.1.01', duration, 440],
+  ['*.2.01', duration, 330],
+  ['*.3.01', duration, 330],
+  ['*.4.01', duration, 330]
+]);
+
+dilla.on('step', function (step) {
+  if (step.event === 'start') {
+    oscillator = step.context.createOscillator();
+    gainNode = step.context.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(step.context.destination);
+    oscillator.frequency.value = step.args[2];
+    gainNode.gain.setValueAtTime(1, step.time);
+    oscillator.start(step.time);
+  }
+  else if (step.event === 'stop' && oscillator) {
+    gainNode.gain.setValueAtTime(1, step.time);
+    gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
+    oscillator = null;
+    gainNode = null;
+  }
+});
+
+dilla.start();
+```
 
 ### API
 
@@ -97,42 +133,6 @@ dilla.on('step', function (step) {
 });
 ```
 
-### Example: metronome
-
-The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
-
-```javascript
-var duration = 15;
-var oscillator, gainNode;
-
-dilla.set('metronome', [
-  ['*.1.01', duration, 440],
-  ['*.2.01', duration, 330],
-  ['*.3.01', duration, 330],
-  ['*.4.01', duration, 330]
-]);
-
-dilla.on('step', function (step) {
-  if (step.event === 'start') {
-    oscillator = step.context.createOscillator();
-    gainNode = step.context.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(step.context.destination);
-    oscillator.frequency.value = step.args[2];
-    gainNode.gain.setValueAtTime(1, step.time);
-    oscillator.start(step.time);
-  }
-  else if (step.event === 'stop' && oscillator) {
-    gainNode.gain.setValueAtTime(1, step.time);
-    gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
-    oscillator = null;
-    gainNode = null;
-  }
-});
-
-dilla.start();
-```
-
 ## Changelog
 
 - **0.1.0**
@@ -150,7 +150,7 @@ dilla.start();
   - NEW: Use [expressions](https://www.npmjs.com/package/dilla-expressions) to insert repeating events [#2](https://github.com/adamrenklint/dilla/issues/2)
   - FIXED: "Out of bounds" warning does not say which channel [#6](https://github.com/adamrenklint/dilla/issues/6)
 - **1.1.1**
-  - FIXED: Ambiguous use of the word "*events*" [#8](https://github.com/adamrenklint/dilla/issues/8)
+  - FIXED: Ambiguous use of the word "*event*" [#8](https://github.com/adamrenklint/dilla/issues/8)
 
 ## License
 
