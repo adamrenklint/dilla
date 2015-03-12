@@ -87,7 +87,7 @@ dilla.start();
 
 #### Position and options
 
-- **dilla.position** returns current position string, ```"BAR.BEAT.TICK"```
+- **dilla.position** returns current [position string](#position), ```"BAR.BEAT.TICK"```
 - **dilla.setPosition(position)** set position to ```"BAR.BEAT.TICK"```
 - **dilla.setTempo(bpm)** set playback tempo, default ```120```
 - **dilla.setBeatsPerBar(beats)** change playback time signature, default ```4```
