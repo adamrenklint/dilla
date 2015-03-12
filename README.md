@@ -3,9 +3,9 @@
 [![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
 
 
-> Schedule looped playback of Web Audio events at 96 ticks per beat
+> Schedule looped playback of Web Audio notes at 96 ticks per beat
 
-Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper).
+Based on [ditty](https://github.com/mmckegg/ditty) and [bopper](https://github.com/mmckegg/bopper). Named after one of [the greatest](http://en.wikipedia.org/wiki/J_Dilla) to ever touch a drum machine.
 
 ## Install
 
@@ -33,58 +33,7 @@ var dilla = new Dilla(audioContext, options);
 
 Note that ```loopLength``` is measured in bars, i.e. the default loop length above is 8 beats.
 
-### API
-
-#### Playback controls
-
-- **dilla.start()** start playback at current position
-- **dilla.pause()** stop playback at current position
-- **dilla.stop()** stop playback and set position to start of loop
-
-#### Scheduling
-
-- **dilla.set(id, events)** schedule playback of array of *events* on channel with *id*, clearing any previously scheduled events on same channel
-  - an event is an array with a position string or expression at index 0
-  - duration can be defined, in ticks, at index 1
-  - any other arguments can be defined at index 2 and beyond, and will be passed in ```step.args```
-- **dilla.get(id)** returns an array of events scheduled on channel with *id*
-- **dilla.channels()** returns an array of all channel ids
-- **dilla.clear(id)** clear events for channel
-- **dilla.clear()** clear events for all channels
-
-#### Position and options
-
-- **dilla.position** returns current position string, ```"BAR.BEAT.TICK"```
-- **dilla.setPosition(position)** set position to ```"BAR.BEAT.TICK"```
-- **dilla.setTempo(bpm)** set playback tempo, default ```120```
-- **dilla.setBeatsPerBar(beats)** change playback time signature, default ```4```
-- **dilla.setLoopLength(bars)** change bars per loop, default ```2```
-
-### Events
-
-#### tick
-
-Fires when the bar, beat or tick value of ```dilla.position()``` is updated.
-
-```javascript
-dilla.on('tick', function (tick) {
-  console.log(tick.position) // "1.1.01"
-});
-```
-
-#### step
-
-Fires when a scheduled event should start or stop.
-
-```javascript
-dilla.on('step', function (step) {
-  console.log(step.event); // "start" or "stop"
-  console.log(step.time); // offset in seconds
-  console.log(step.args); // data originally passed to set()
-});
-```
-
-### Example: metronome
+### Example
 
 The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
@@ -120,6 +69,70 @@ dilla.on('step', function (step) {
 dilla.start();
 ```
 
+### API
+
+#### Playback controls
+
+- **dilla.start()** start playback at current position
+- **dilla.pause()** stop playback at current position
+- **dilla.stop()** stop playback and set position to start of loop
+
+#### Scheduling
+
+- **dilla.set(id, notes)** schedule playback of array of *[notes](#note)* on channel with *id*, clearing any previously scheduled notes on same channelpassed in ```step.args```
+- **dilla.get(id)** returns an array of notes scheduled on channel with *id*
+- **dilla.channels()** returns an array of all channel ids
+- **dilla.clear(id)** clear notes for channel
+- **dilla.clear()** clear notes for all channels
+
+#### Position and options
+
+- **dilla.position** returns current [position string](#position), ```"BAR.BEAT.TICK"```
+- **dilla.setPosition(position)** set position to ```"BAR.BEAT.TICK"```
+- **dilla.setTempo(bpm)** set playback tempo, default ```120```
+- **dilla.setBeatsPerBar(beats)** change playback time signature, default ```4```
+- **dilla.setLoopLength(bars)** change bars per loop, default ```2```
+
+### Objects
+
+#### Position
+
+- A string in the format ```BAR.BEAT.TICK```
+- Where each part is a (1-based index) number
+- Tick values under 10 are padded with a leading zero
+- Can contain [expressions](https://github.com/adamrenklint/dilla-expressions) which are expanded by ```dilla.set()```
+
+#### Note
+
+- An array
+- At index 0, a position string or expression (required)
+- At index 1, duration is defined in ticks (optional)
+- From index 2 and beyond, define arbitrary arguments, like playback rate or oscillator frequency
+
+### Events
+
+#### tick
+
+Fires when the bar, beat or tick value of ```dilla.position()``` is updated.
+
+```javascript
+dilla.on('tick', function (tick) {
+  console.log(tick.position) // "1.1.01"
+});
+```
+
+#### step
+
+Fires when a scheduled event should start or stop.
+
+```javascript
+dilla.on('step', function (step) {
+  console.log(step.event); // "start" or "stop"
+  console.log(step.time); // offset in seconds
+  console.log(step.args); // note data originally passed to set()
+});
+```
+
 ## Changelog
 
 - **0.1.0**
@@ -133,9 +146,11 @@ dilla.start();
 - **1.0.2**
   - FIXED: ```dilla.getPositionWithOffset()``` returns incorrect position when offset is falsy [#5](https://github.com/adamrenklint/dilla/issues/5)
   - FIXED: ```"stop"``` fires for events with falsy duration (oneshots) [#3](https://github.com/adamrenklint/dilla/issues/3)
-- **1.0.3**
+- **1.1.0**
   - NEW: Use [expressions](https://www.npmjs.com/package/dilla-expressions) to insert repeating events [#2](https://github.com/adamrenklint/dilla/issues/2)
   - FIXED: "Out of bounds" warning does not say which channel [#6](https://github.com/adamrenklint/dilla/issues/6)
+- **1.1.1**
+  - FIXED: Ambiguous use of the word "*event*" [#8](https://github.com/adamrenklint/dilla/issues/8)
 
 ## License
 
