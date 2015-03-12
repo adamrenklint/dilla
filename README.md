@@ -123,7 +123,7 @@ dilla.on('tick', function (tick) {
 
 #### step
 
-Fires when a scheduled event should start or stop.
+Fires when a scheduled note should start or stop. For notes with undefined or falsy duration value (i.e. oneshots), no *stop* step event is triggered.
 
 ```javascript
 dilla.on('step', function (step) {
