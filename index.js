@@ -1,5 +1,5 @@
 var events = require('events');
-var inherits = require('util').inherits
+var inherits = require('util').inherits;
 var bopper = require('bopper');
 var ditty = require('ditty');
 var expr = require('dilla-expressions');
@@ -10,6 +10,10 @@ function Dilla (audioContext, options) {
 
   if (!(this instanceof Dilla)){
     return new Dilla(audioContext, options);
+  }
+
+  if (!audioContext || typeof audioContext !== 'object' || typeof audioContext.createScriptProcessor !== 'function') {
+    throw new Error('Invalid arguments: cannot init without AudioContext');
   }
 
   events.EventEmitter.call(this);
@@ -58,7 +62,7 @@ function getPositionFromClockPosition (position) {
   position = position - beats;
   var ticks = Math.floor(position * 96) + 1;
   if (ticks < 10) ticks = '0' + ticks;
-  return ++bars + '.' + ++beats + '.' + ticks;
+  return (bars + 1) + '.' + (beats + 1) + '.' + ticks;
 }
 
 function getClockPositionFromPosition (position) {
@@ -103,16 +107,16 @@ function set (id, notes) {
     }
     return true;
   }).map(function (note) {
-    var args = typeof note[2] === 'object' ? note[2] : typeof note[1] === 'object' ? note[1] : {};
+    var args = typeof note[1] === 'object' ? note[2] : typeof note[1] === 'object' ? note[1] : {};
     console.log(args);
     // var args = note[2] || {};
     //  {
     //   'position': note[0]
     // };
     // if (note[1]) args.duration = note[1];
-    return [
-      self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, 
-      , note[1]].concat(note.slice(2));
+    // return [
+    //   self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, 
+    //   , note[1]].concat(note.slice(2));
   });
 
   console.log(notes[0]);

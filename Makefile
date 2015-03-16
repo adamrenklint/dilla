@@ -9,7 +9,7 @@ COVERAGE_LIMIT = 95
 install:
 	@npm install
 
-test: lint
+test:
 	@$(MOCHA) -s 10
 
 watch:
@@ -24,7 +24,7 @@ check-coverage: coverage
 report-coverage:
 	@CODECLIMATE_REPO_TOKEN=$(CC_REPO_TOKEN) $(CC_REPORTER) < coverage/lcov.info
 
-publish: test check-coverage report-coverage
+publish: lint test check-coverage report-coverage
 	@npm publish && make tag gh-pages
 
 lint:

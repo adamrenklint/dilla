@@ -131,6 +131,11 @@ dilla.on('step', function (step) {
   console.log(step.args); // note data originally passed to set()
 });
 ```
+## Develop
+
+- ```make test```
+- ```make coverage```
+- ```make publish```
 
 ## Changelog
 

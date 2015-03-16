@@ -13,4 +13,4 @@ install:
   - npm install
 
 script:
-  - make test check-coverage
+  - make lint test check-coverage
