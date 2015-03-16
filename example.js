@@ -3,11 +3,13 @@ var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
 var duration = 15;
+var high = { 'freq': 440 };
+var low = { 'freq': 330 };
 dilla.set('metronome', [
-  ['*.1.01', duration, 440],
-  ['*.2.01', duration, 330],
-  ['*.3.01', duration, 330],
-  ['*.4.01', duration, 330]
+  ['*.1.01', duration, high],
+  ['*.2.01', duration, low],
+  ['*.3.01', duration, low],
+  ['*.4.01', duration, low]
 ]);
 
 function draw () {

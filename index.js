@@ -103,9 +103,19 @@ function set (id, notes) {
     }
     return true;
   }).map(function (note) {
-    return [self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, note[0], note[1]].concat(note.slice(2));
+    var args = typeof note[2] === 'object' ? note[2] : typeof note[1] === 'object' ? note[1] : {};
+    console.log(args);
+    // var args = note[2] || {};
+    //  {
+    //   'position': note[0]
+    // };
+    // if (note[1]) args.duration = note[1];
+    return [
+      self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, 
+      , note[1]].concat(note.slice(2));
   });
 
+  console.log(notes[0]);
   this.scheduler.set(id, notes, this.beatsPerBar * this.loopLength);
 }
 
