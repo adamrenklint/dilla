@@ -37,10 +37,15 @@ Note that ```loopLength``` is measured in bars, i.e. the default loop length abo
 The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
 ```javascript
-var high = { 'freq': 440, 'duration': 15 };
+var high = {
+  'position': '*.1.01',
+  'freq': 440,
+  'duration': 15
+};
 var low = { 'freq': 330, 'duration': 15 };
+
 dilla.set('metronome', [
-  ['*.1.01', high],
+  high,
   ['*.2.01', low],
   ['*.3.01', low],
   ['*.4.01', low]
@@ -104,7 +109,7 @@ dilla.start();
 #### Note
 
 - An object that must define ```position```
-- Can define ```duration``` in ticks (optional)
+- Can define ```duration``` in ticks (optional) or any other other params, like frequency or playback rate
 
 ### Events
 
@@ -154,6 +159,9 @@ dilla.on('step', function (step) {
   - FIXED: "Out of bounds" warning does not say which channel [#6](https://github.com/adamrenklint/dilla/issues/6)
 - **1.1.1**
   - FIXED: Ambiguous use of the word "*event*" [#8](https://github.com/adamrenklint/dilla/issues/8)
+- **1.2.0**
+  - CHANGED: Note passed to ```dilla.set()``` can be an array with position at index 0, or a note object, and will be merged into a note object
+  - NEW: Added lots of unit tests
 
 ## License
 

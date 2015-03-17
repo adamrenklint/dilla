@@ -112,13 +112,13 @@ function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
   if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
-  notes = notes.map(function (note) {
-    if (!Array.isArray(note) && typeof note === 'object' && self.isValidPositionString(note.position)) {
+  
+  notes = expr(notes.map(function (note) {
+    if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
       return [note.position, note];
     }
     return note;
-  })
-  notes = expr(notes, this.loopLength(), this.beatsPerBar()).filter(function (note) {
+  }), this.loopLength(), this.beatsPerBar()).filter(function (note) {
     return self.isPositionWithinBounds(note[0]);
   }).map(function (note) {
     var normal = self.normalizeNote(note);

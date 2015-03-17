@@ -2,10 +2,15 @@ var Dilla = require('./index');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
-var high = { 'freq': 440, 'duration': 15 };
+var high = {
+  'position': '*.1.01',
+  'freq': 440,
+  'duration': 15
+};
 var low = { 'freq': 330, 'duration': 15 };
+
 dilla.set('metronome', [
-  ['*.1.01', high],
+  high,
   ['*.2.01', low],
   ['*.3.01', low],
   ['*.4.01', low]
