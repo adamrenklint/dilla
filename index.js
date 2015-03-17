@@ -52,6 +52,7 @@ function getPositionFromTime (time) {
 }
 
 function getPositionFromClockPosition (position) {
+  if (typeof position !== 'number' || isNaN(position)) throw new Error('Invalid argument: clockPosition is not a valid number');
   if (position < 0) return '0.0.00';
   var beatsPerLoop = this._loopLength * this._beatsPerBar;
   var loops = Math.floor(position / beatsPerLoop) || 0;
@@ -74,6 +75,8 @@ function getClockPositionFromPosition (position) {
 }
 
 function getPositionWithOffset (position, offset) {
+  if (!this.isValidPositionString(position)) throw new Error('Invalid argument: position is not a valid position string');
+  if (typeof offset !== 'number' || isNaN(offset) || offset % 1 !== 0) throw new Error('Invalid argument: offset is not a valid number');
   if (!offset) return position;
   var clockPosition = this.getClockPositionFromPosition(position);
   var clockOffset = offset / 96;
@@ -81,7 +84,7 @@ function getPositionWithOffset (position, offset) {
 }
 
 function getDurationFromTicks (ticks) {
-  if (typeof ticks !== 'number' || ticks < 0) throw new Error('Invalid argument: ticks is not a valid number');
+  if (typeof ticks !== 'number' || ticks < 0 || isNaN(ticks)) throw new Error('Invalid argument: ticks is not a valid number');
   return (1 / 96) * ticks;
 }
 
@@ -97,25 +100,22 @@ function emitStep (step) {
 
 function set (id, notes) {
   var self = this;
-  notes = expr(notes, this._loopLength, this._beatsPerBar).filter(function (note) {
-    var parts = note[0].split('.');
-    var bars = parseInt(parts[0], 10) - 1;
-    var beats = parseInt(parts[1], 10) - 1;
-    var ticks = parseInt(parts[2], 10) - 1;
-    if (ticks >= 96 || beats >= self.beatsPerBar || bars >= self.loopLength) {
-      console.warn('[%s] note is out of bounds: %s', id, note[0], note);
-      return false; 
-    }
-    return true;
+  if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
+  if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
+  notes = expr(notes, this.loopLength(), this.beatsPerBar()).filter(function (note) {
+    return self.isPositionWithinBounds(note[0]);
   }).map(function (note) {
-    return [self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1]), null, null, note[0], note[1]].concat(note.slice(2));
+    return [self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1] || 0), null, null, note[0], note[1]].concat(note.slice(2));
   });
 
-  this.scheduler.set(id, notes, this._beatsPerBar * this._loopLength);
+  this.scheduler.set(id, notes, this.beatsPerBar() * this.loopLength());
 }
 
 function get (id) {
-  return this.scheduler.get(id);
+  return this.scheduler.get(id).map(function (note) {
+    console.log(note);
+    return note;
+  });
 }
 
 function channels () {
@@ -196,7 +196,7 @@ function tempo () {
 }
 
 function setTempo (tempo) {
-  if (typeof tempo !== 'number' || tempo < 0) throw new Error('Invalid argument: tempo is not a valid number');
+  if (typeof tempo !== 'number' || tempo < 0 || isNaN(tempo)) throw new Error('Invalid argument: tempo is not a valid number');
   this.clock.setTempo(tempo);
 }
 
@@ -205,7 +205,7 @@ function beatsPerBar () {
 }
 
 function setBeatsPerBar (beats) {
-  if (typeof beats !== 'number' || beats < 0) throw new Error('Invalid argument: beats is not a valid number');
+  if (typeof beats !== 'number' || beats < 0 || isNaN(beats)) throw new Error('Invalid argument: beats is not a valid number');
   this._beatsPerBar = beats;
 }
 
@@ -214,7 +214,7 @@ function loopLength () {
 }
 
 function setLoopLength (bars) {
-  if (typeof bars !== 'number' || bars < 0) throw new Error('Invalid argument: bars is not a valid number');
+  if (typeof bars !== 'number' || bars < 0 || isNaN(bars)) throw new Error('Invalid argument: bars is not a valid number');
   this._loopLength = bars;
 }
 
