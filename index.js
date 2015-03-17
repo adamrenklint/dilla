@@ -98,6 +98,15 @@ function emitStep (step) {
   this.emit('step', step);
 }
 
+function normalizeNote (params) {
+  if (!params || !Array.isArray(params)) throw new Error('Invalid argument: note params is not valid array');
+  var note = typeof params[1] === 'object' ? params[1] : typeof params[0] === 'object' ? params[0] : {};
+  var position = typeof params[0] === 'string' && this.isValidPositionString(params[0]) ? params[0] : typeof note.position === 'string' && this.isValidPositionString(note.position) ? note.position : null;
+  if (!position) throw new Error('Invalid argument: position is not valid');
+  note.position = position;
+  return note;
+}
+
 function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
@@ -219,7 +228,7 @@ function setLoopLength (bars) {
 }
 
 var proto = Dilla.prototype;
-[set, get, clear, start, stop, pause, getPositionFromTime, getPositionFromClockPosition, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, getPositionWithOffset, setBeatsPerBar, setLoopLength, channels, position, tempo, beatsPerBar, loopLength, isPositionWithinBounds, isValidPositionString].forEach(function (fn) {
+[set, get, clear, start, stop, pause, getPositionFromTime, getPositionFromClockPosition, setTempo, setPosition, getClockPositionFromPosition, getDurationFromTicks, getPositionWithOffset, setBeatsPerBar, setLoopLength, channels, position, tempo, beatsPerBar, loopLength, isPositionWithinBounds, normalizeNote, isValidPositionString].forEach(function (fn) {
   proto[fn.name] = fn;
 });
 

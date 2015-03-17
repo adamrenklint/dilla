@@ -350,14 +350,71 @@ describe('dilla.normalizeNote (note)', function () {
     });
   });
   describe('when "note" is an array', function () {
+    describe('when no valid position is passed', function () {
+      it('should throw an error', function () {
+        expect(function () {
+          dilla.normalizeNote([]);
+        }).to.throw(/invalid argument/i);
+        expect(function () {
+          dilla.normalizeNote(['1.1.asd']);
+        }).to.throw(/invalid argument/i);
+        expect(function () {
+          dilla.normalizeNote([true]);
+        }).to.throw(/invalid argument/i);
+        expect(function () {
+          dilla.normalizeNote([123]);
+        }).to.throw(/invalid argument/i);
+      });
+    });
     describe('when index 0 is a valid position string', function () {
-      it('should use index 0 as position');
+      it('should return a note object', function () {
+        expect(dilla.normalizeNote(['1.1.01'])).to.be.a('object');
+      });
+      it('should use index 0 as position', function () {
+        expect(dilla.normalizeNote(['1.1.01']).position).to.equal('1.1.01');
+      });
+      describe('when index 1 is a note object', function () {
+        it('should extend the note object with position', function () {
+          var note = { 'foo': 'bar' };
+          var returned = dilla.normalizeNote(['1.2.23', note]);
+          expect(returned.foo).to.equal('bar');
+          expect(returned.position).to.equal('1.2.23');
+        });
+        describe('when position is already defined on the note object', function () {
+          it('should overwrite the position with index 0', function () {
+            var note = { 'foo': 'bar', 'position': '1.2.32' };
+            var returned = dilla.normalizeNote(['1.2.23', note]);
+            expect(returned.foo).to.equal('bar');
+            expect(returned.position).to.equal('1.2.23');
+          });
+        });
+      });
     });
     describe('when index 0 is a note object', function () {
       describe('when note object does not have a valid position', function () {
-        it('should throw an error', function () {});
+        it('should throw an error', function () {
+          expect(function () {
+            dilla.normalizeNote({});
+          }).to.throw(/invalid argument/i);
+          expect(function () {
+            dilla.normalizeNote({ 'foo': 'bar' });
+          }).to.throw(/invalid argument/i);
+          expect(function () {
+            dilla.normalizeNote({ 'position': 12 });
+          }).to.throw(/invalid argument/i);
+          expect(function () {
+            dilla.normalizeNote({ 'position': '1.2.asd' });
+          }).to.throw(/invalid argument/i);
+        });
       });
-
+      describe('when note object has a valid position', function () {
+        it('should return a note object', function () {
+          var note = { 'foo': 'bar', 'position': '1.2.32' };
+          var returned = dilla.normalizeNote([note]);
+          expect(returned.foo).to.equal('bar');
+          expect(returned.position).to.equal('1.2.32');
+        });
+      });
     });
   });
 });
