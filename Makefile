@@ -28,7 +28,7 @@ report-coverage:
 	@CODECLIMATE_REPO_TOKEN=$(CC_REPO_TOKEN) $(CC_REPORTER) < coverage/lcov.info
 
 publish: lint test check-coverage report-coverage
-	@npm publish && make tag gh-pages
+	@npm publish && make tag ghpages
 
 lint:
 	@$(JSHINT) index.js
