@@ -1,7 +1,6 @@
 # dilla
 
-[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
-
+[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Build Status](https://travis-ci.org/adamrenklint/dilla.svg)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Test Coverage](https://codeclimate.com/github/adamrenklint/dilla/badges/coverage.svg)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
 
 > Schedule looped playback of Web Audio notes at 96 ticks per beat
 
@@ -38,23 +37,28 @@ Note that ```loopLength``` is measured in bars, i.e. the default loop length abo
 The "hello world" of audio libraries, the simple metronome: check out the [demo](http://adamrenklint.github.io/dilla) or [code](https://github.com/adamrenklint/dilla/blob/master/example.js).
 
 ```javascript
-var duration = 15;
-var oscillator, gainNode;
+var high = {
+  'position': '*.1.01',
+  'freq': 440,
+  'duration': 15
+};
+var low = { 'freq': 330, 'duration': 15 };
 
 dilla.set('metronome', [
-  ['*.1.01', duration, 440],
-  ['*.2.01', duration, 330],
-  ['*.3.01', duration, 330],
-  ['*.4.01', duration, 330]
+  high,
+  ['*.2.01', low],
+  ['*.3.01', low],
+  ['*.4.01', low]
 ]);
 
+var oscillator, gainNode;
 dilla.on('step', function (step) {
   if (step.event === 'start') {
     oscillator = step.context.createOscillator();
     gainNode = step.context.createGain();
     oscillator.connect(gainNode);
     gainNode.connect(step.context.destination);
-    oscillator.frequency.value = step.args[2];
+    oscillator.frequency.value = step.args.freq;
     gainNode.gain.setValueAtTime(1, step.time);
     oscillator.start(step.time);
   }
@@ -79,7 +83,7 @@ dilla.start();
 
 #### Scheduling
 
-- **dilla.set(id, notes)** schedule playback of array of *[notes](#note)* on channel with *id*, clearing any previously scheduled notes on same channelpassed in ```step.args```
+- **dilla.set(id, notes)** schedule playback of array of *notes* on channel with *id*, clearing any previously scheduled notes on same channel. A note can be defined as a [note object](#note) (must contain position) or an array with position at index 0 and params in an object at index 1 (see metronome example above)
 - **dilla.get(id)** returns an array of notes scheduled on channel with *id*
 - **dilla.channels()** returns an array of all channel ids
 - **dilla.clear(id)** clear notes for channel
@@ -104,10 +108,8 @@ dilla.start();
 
 #### Note
 
-- An array
-- At index 0, a position string or expression (required)
-- At index 1, duration is defined in ticks (optional)
-- From index 2 and beyond, define arbitrary arguments, like playback rate or oscillator frequency
+- An object that must define ```position```
+- Can define ```duration``` in ticks (optional) or any other other params, like frequency or playback rate
 
 ### Events
 
@@ -123,7 +125,7 @@ dilla.on('tick', function (tick) {
 
 #### step
 
-Fires when a scheduled event should start or stop.
+Fires when a scheduled note should start or stop. For notes with undefined or falsy duration value (i.e. oneshots), no *stop* step event is triggered.
 
 ```javascript
 dilla.on('step', function (step) {
@@ -132,6 +134,12 @@ dilla.on('step', function (step) {
   console.log(step.args); // note data originally passed to set()
 });
 ```
+
+## Develop
+
+- ```make test```
+- ```make coverage```
+- ```make publish```
 
 ## Changelog
 
@@ -151,6 +159,9 @@ dilla.on('step', function (step) {
   - FIXED: "Out of bounds" warning does not say which channel [#6](https://github.com/adamrenklint/dilla/issues/6)
 - **1.1.1**
   - FIXED: Ambiguous use of the word "*event*" [#8](https://github.com/adamrenklint/dilla/issues/8)
+- **1.2.0**
+  - CHANGED: Note passed to ```dilla.set()``` can be an array with position at index 0, or a note object, and will be merged into a note object
+  - NEW: Added lots of unit tests
 
 ## License
 

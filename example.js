@@ -2,12 +2,18 @@ var Dilla = require('./index');
 var audioContext = new AudioContext();
 var dilla = new Dilla(audioContext);
 
-var duration = 15;
+var high = {
+  'position': '*.1.01',
+  'freq': 440,
+  'duration': 15
+};
+var low = { 'freq': 330, 'duration': 15 };
+
 dilla.set('metronome', [
-  ['*.1.01', duration, 440],
-  ['*.2.01', duration, 330],
-  ['*.3.01', duration, 330],
-  ['*.4.01', duration, 330]
+  high,
+  ['*.2.01', low],
+  ['*.3.01', low],
+  ['*.4.01', low]
 ]);
 
 function draw () {
@@ -24,7 +30,7 @@ dilla.on('step', function (step) {
     gainNode = step.context.createGain();
     oscillator.connect(gainNode);
     gainNode.connect(step.context.destination);
-    oscillator.frequency.value = step.args[2];
+    oscillator.frequency.value = step.args.freq;
     gainNode.gain.setValueAtTime(1, step.time);
     oscillator.start(step.time);
   }
