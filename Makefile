@@ -4,7 +4,7 @@ ISTANBUL = ./node_modules/istanbul/lib/cli.js
 CC_REPORTER = ./node_modules/codeclimate-test-reporter/bin/codeclimate.js
 CC_REPO_TOKEN = 1363edd385fdd2f477d277017d6f8929adbb6cfc973923017f8e4ce1bf08dd0b
 JSHINT = ./node_modules/jshint/bin/jshint
-COVERAGE_LIMIT = 95
+COVERAGE_LIMIT = 75
 
 install:
 	@npm install
