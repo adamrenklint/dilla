@@ -90,10 +90,11 @@ function getDurationFromTicks (ticks) {
 
 function emitStep (step) {
   var offset = step.offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
+  var note = step.args = step.args[0];
   step.time = step.time + offset;
   step.clockPosition = step.position;
-  step.position = step.event === 'start' ? step.args[0] : this.getPositionWithOffset(step.args[0], step.args[1]);
-  if (step.event === 'stop'  && step.position === step.args[0]) return;
+  step.position = step.event === 'start' ? note.position : this.getPositionWithOffset(note.position, note.duration || 0);
+  if (step.event === 'stop'  && step.position === note.position) return;
   step.context = this.context;
   this.emit('step', step);
 }
@@ -111,19 +112,26 @@ function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
   if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
+  notes = notes.map(function (note) {
+    if (!Array.isArray(note) && typeof note === 'object' && self.isValidPositionString(note.position)) {
+      return [note.position, note];
+    }
+    return note;
+  })
   notes = expr(notes, this.loopLength(), this.beatsPerBar()).filter(function (note) {
     return self.isPositionWithinBounds(note[0]);
   }).map(function (note) {
-    return [self.getClockPositionFromPosition(note[0]), self.getDurationFromTicks(note[1] || 0), null, null, note[0], note[1]].concat(note.slice(2));
+    var normal = self.normalizeNote(note);
+    return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
 
   this.scheduler.set(id, notes, this.beatsPerBar() * this.loopLength());
 }
 
 function get (id) {
-  return this.scheduler.get(id).map(function (note) {
-    console.log(note);
-    return note;
+  if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
+  return (this.scheduler.get(id) || []).map(function (note) {
+    return note[4];
   });
 }
 
@@ -134,6 +142,7 @@ function channels () {
 function clear (id) {
   var self = this;
   if (id) {
+    if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
     this.set(id, []);
   }
   else {

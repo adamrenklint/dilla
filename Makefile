@@ -9,6 +9,9 @@ COVERAGE_LIMIT = 95
 install:
 	@npm install
 
+example: 
+	@node node_modules/beefy/bin/beefy example.js
+	
 test:
 	@$(MOCHA) -s 10
 

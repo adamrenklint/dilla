@@ -332,7 +332,7 @@ describe('dilla.getPositionWithOffset (position, offset)', function () {
   });
 });
 
-describe('dilla.normalizeNote (note)', function () {
+describe('dilla.normalizeNote (noteParams)', function () {
   describe('when "note" is not an array', function () {
     it('should throw an error', function () {
       expect(function () {
@@ -419,8 +419,6 @@ describe('dilla.normalizeNote (note)', function () {
   });
 });
 
-return;
-
 describe('dilla.set (id, notes)', function () {
   describe('when id is not a valid id string', function () {
     it('should throw an error', function () {
@@ -466,61 +464,95 @@ describe('dilla.set (id, notes)', function () {
       expect(notes[0].foo).to.equal('bar');
     });
   });
-  describe('when passing duration in ticks', function () {
-    it('should merge this with with args object', function () {
+  describe('when re-using a channel id', function () {
+    it('should overwrite previously registered notes', function () {
       dilla.set('foo', [
-        ['1.2.01', 10, { 'foo': 'bar' }]
+        ['1.1.01', { 'foo': 'bar' }]
+      ]);
+      dilla.set('foo', [
+        ['1.2.01', { 'foo': 'bar' }]
       ]);
       var notes = dilla.get('foo');
       expect(notes.length).to.equal(1);
       expect(notes[0].position).to.equal('1.2.01');
-      expect(notes[0].duration).to.equal(10);
       expect(notes[0].foo).to.equal('bar');
     });
-  });
-  describe('when omitting duration', function () {
-    it('should set args.oneshot to true');
-  });
-  // describe('when passing params', function () {
-  //   it('should merge all params', function () {
-  //     dilla.set('foo', [
-  //       ['1.1.01'],
-  //       ['1.2.01']
-  //     ]);
-  //   });
-  // });
-  describe('when re-using a channel id', function () {
-    it('should overwrite previously registered notes');
   });
 });
 
 describe('dilla.get (id)', function () {
   describe('when id is not a valid id string', function () {
-    it('should throw an error');
+    it('should throw an error', function () {
+      expect(function () {
+        dilla.get();
+      }).to.throw(/invalid argument/i);
+      expect(function () {
+        dilla.get(3);
+      }).to.throw(/invalid argument/i);
+      expect(function () {
+        dilla.get(true);
+      }).to.throw(/invalid argument/i);
+    });
   });
   describe('when no channel with id exists', function () {
-    it('should return an empty array');
+    it('should return an empty array', function () {
+      var returned = dilla.get('foobar');
+      expect(returned).to.be.a('array');
+      expect(returned.length).to.equal(0);
+    });
   });
   describe('when a channel with registered note exists', function () {
-    it('should return an array of notes');
+    it('should return an array of note objects', function () {
+      dilla.set('foozle', [
+        ['1.1.01'],
+        { 'position': '1.2.02' }
+      ]);
+      var returned = dilla.get('foozle');
+      expect(returned).to.be.a('array');
+      expect(returned.length).to.equal(2);
+      expect(returned[0].position).to.equal('1.1.01');
+      expect(returned[1].position).to.equal('1.2.02');
+    });
   });
 });
 
 describe('dilla.clear (id)', function () {
   describe('when id is not a valid id string', function () {
-    it('should throw an error');
+    it('should throw an error', function () {
+      expect(function () {
+        dilla.clear(3);
+      }).to.throw(/invalid argument/i);
+      expect(function () {
+        dilla.clear(true);
+      }).to.throw(/invalid argument/i);
+    });
   });
   describe('when no channel with id exists', function () {
-    it('should do nothing');
+    it('should do nothing', function () {
+      expect(function () {
+        dilla.clear('foo');
+      }).not.to.throw(Error);
+    });
   });
   describe('when a channel with registered note exists', function () {
-    it('should unregister all notes on that channel');
-    it('should return true');
+    it('should unregister all notes on that channel', function () {
+      dilla.set('foo', [['1.1.01'], ['1.1.02']]);
+      var returned = dilla.clear('foo');
+      var notes = dilla.get('foo');
+      expect(notes).to.be.a('array');
+      expect(notes.length).to.equal(0);
+    });
   });
 });
 
 describe('dilla.clear ()', function () {
   describe('when a channel with registered note exists', function () {
-    it('should unregister all notes on all channels');
+    it('should unregister all notes on all channels', function () {
+      dilla.set('foo', [['1.1.01'], ['1.1.02']]);
+      dilla.set('boo', [['2.1.01'], ['2.1.02']]);
+      dilla.clear();
+      expect(dilla.get('foo').length).to.equal(0);
+      expect(dilla.get('boo').length).to.equal(0);
+    });
   });
 });
