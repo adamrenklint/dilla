@@ -73,6 +73,10 @@ dilla.on('step', function (step) {
 dilla.start();
 ```
 
+### Tutorials
+
+- [Making a boombap beat with dilla and Web Audio](http://adamrenklint.com/making-boombap-beat-with-dilla/)
+
 ### API
 
 #### Playback controls
