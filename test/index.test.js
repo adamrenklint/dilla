@@ -477,6 +477,19 @@ describe('dilla.set (id, notes)', function () {
       expect(notes[0].position).to.equal('1.2.01');
       expect(notes[0].foo).to.equal('bar');
     });
+    it('should trigger "change" event with new and old note', function (done) {
+      dilla.set('foo', [
+        ['1.1.01', { 'foo': 'bar' }]
+      ]);
+      dilla.on('change', function (current, old) {
+        expect(current[0].position).to.equal('1.2.01');
+        expect(old[0].position).to.equal('1.1.01');
+        done();
+      });
+      dilla.set('foo', [
+        ['1.2.01', { 'foo': 'bar' }]
+      ]);
+    });
   });
 });
 
