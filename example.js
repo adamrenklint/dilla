@@ -37,6 +37,7 @@ dilla.on('step', function (step) {
   else if (step.event === 'stop' && oscillator) {
     gainNode.gain.setValueAtTime(1, step.time);
     gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
+    oscillator.stop(step.time + 0.1);
     oscillator = null;
     gainNode = null;
   }

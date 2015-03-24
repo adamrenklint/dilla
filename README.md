@@ -65,6 +65,7 @@ dilla.on('step', function (step) {
   else if (step.event === 'stop' && oscillator) {
     gainNode.gain.setValueAtTime(1, step.time);
     gainNode.gain.linearRampToValueAtTime(0, step.time + 0.1);
+    oscillator.stop(step.time + 0.1);
     oscillator = null;
     gainNode = null;
   }
@@ -171,6 +172,9 @@ dilla.on('step', function (step) {
   - NEW: [Add custom matcher](https://github.com/adamrenklint/dilla-expressions#custom-matchers) with ```dilla.expressions.addMatcher```
 - **1.3.1**
   - FIXED: Minifying dilla function names breaks everything
+- **1.3.2**
+  - FIXED: "step" event stops triggering when tab is put to background [#14](https://github.com/adamrenklint/dilla/issues/14)
+  - FIXED: Metronome example is leaking, never stops oscillator [#15](https://github.com/adamrenklint/dilla/issues/15)
 
 ## License
 
