@@ -165,7 +165,7 @@ proto._keepAlive = function _keepAlive () {
     window.__lastDillaPosition = this._position;
     window.requestAnimationFrame(this._keepAlive);
   }
-}
+};
 
 proto.start = function start () {
   var now = new Date().valueOf();
