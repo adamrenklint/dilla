@@ -24,6 +24,8 @@ function Dilla (audioContext, options) {
   this.clock = bopper(this.context);
   this.scheduler = ditty();
 
+  this.expressions = expr;
+
   this.upstartWait = options.upstartWait || 250;
   this.setTempo(options.tempo || 120);
   this.setBeatsPerBar(options.beatsPerBar || 4);
@@ -113,12 +115,15 @@ function set (id, notes) {
   if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
   if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
 
-  notes = expr(notes.map(function (note) {
+  notes = this.expressions(notes.map(function (note) {
     if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
       return [note.position, note];
     }
     return note;
-  }), this.loopLength(), this.beatsPerBar()).filter(function (note) {
+  }), {
+    'beatsPerBar': this.beatsPerBar(),
+    'barsPerLoop': this.loopLength()
+  }).filter(function (note) {
     return self.isPositionWithinBounds(note[0]);
   }).map(function (note) {
     var normal = self.normalizeNote(note);

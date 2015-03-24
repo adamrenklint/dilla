@@ -166,6 +166,9 @@ dilla.on('step', function (step) {
 - **1.2.0**
   - CHANGED: Note passed to ```dilla.set()``` can be an array with position at index 0, or a note object, and will be merged into a note object
   - NEW: Added lots of unit tests
+- **1.3.0**
+  - NEW: [Modulus operator](https://github.com/adamrenklint/dilla-expressions#modulus) expression
+  - NEW: [Add custom matcher](https://github.com/adamrenklint/dilla-expressions#custom-matchers) with ```dilla.expressions.addMatcher```
 
 ## License
 
