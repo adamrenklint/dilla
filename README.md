@@ -1,6 +1,6 @@
 # dilla
 
-[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Build Status](https://travis-ci.org/adamrenklint/dilla.svg)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Test Coverage](https://codeclimate.com/github/adamrenklint/dilla/badges/coverage.svg)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla-expressions)
+[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Build Status](https://travis-ci.org/adamrenklint/dilla.svg)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Test Coverage](https://codeclimate.com/github/adamrenklint/dilla/badges/coverage.svg)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla)
 
 > Schedule looped playback of Web Audio notes at 96 ticks per beat
 
@@ -72,6 +72,10 @@ dilla.on('step', function (step) {
 
 dilla.start();
 ```
+
+### Tutorials
+
+- [Making a boombap beat with dilla and Web Audio](http://adamrenklint.com/making-boombap-beat-with-dilla/)
 
 ### API
 
@@ -162,6 +166,9 @@ dilla.on('step', function (step) {
 - **1.2.0**
   - CHANGED: Note passed to ```dilla.set()``` can be an array with position at index 0, or a note object, and will be merged into a note object
   - NEW: Added lots of unit tests
+- **1.3.0**
+  - NEW: [Modulus operator](https://github.com/adamrenklint/dilla-expressions#modulus) expression
+  - NEW: [Add custom matcher](https://github.com/adamrenklint/dilla-expressions#custom-matchers) with ```dilla.expressions.addMatcher```
 
 ## License
 

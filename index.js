@@ -24,13 +24,15 @@ function Dilla (audioContext, options) {
   this.clock = bopper(this.context);
   this.scheduler = ditty();
 
+  this.expressions = expr;
+
   this.upstartWait = options.upstartWait || 250;
   this.setTempo(options.tempo || 120);
   this.setBeatsPerBar(options.beatsPerBar || 4);
   this.setLoopLength(options.loopLength || 2);
 
   this._position = '0.0.00';
-  
+
   this.clock.on('data', updatePositionFromClock.bind(this));
   this.clock.pipe(this.scheduler).on('data', emitStep.bind(this));
 }
@@ -112,13 +114,16 @@ function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
   if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
-  
-  notes = expr(notes.map(function (note) {
+
+  notes = this.expressions(notes.map(function (note) {
     if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
       return [note.position, note];
     }
     return note;
-  }), this.loopLength(), this.beatsPerBar()).filter(function (note) {
+  }), {
+    'beatsPerBar': this.beatsPerBar(),
+    'barsPerLoop': this.loopLength()
+  }).filter(function (note) {
     return self.isPositionWithinBounds(note[0]);
   }).map(function (note) {
     var normal = self.normalizeNote(note);
@@ -161,18 +166,21 @@ function start () {
 
   if (!this.clock._state.playing) {
     this.clock.start();
+    this.emit('playing');
   }
 }
 
 function pause () {
   if (this.clock._state.playing) {
     this.clock.stop();
+    this.emit('paused');
   }
 }
 
 function stop () {
   if (this.clock._state.playing) {
     this.clock.stop();
+    this.emit('paused');
     this.clock.setPosition(0);
     this._position = '0.0.00';
   }
@@ -201,11 +209,11 @@ function isPositionWithinBounds (position) {
   var bars = parseInt(fragments[0], 10) - 1;
   var beats = parseInt(fragments[1], 10) - 1;
   var ticks = parseInt(fragments[2], 10) - 1;
-  
+
   if (ticks < 0 || beats < 0 || bars < 0 || ticks >= 96 || beats >= this.beatsPerBar() || bars >= this.loopLength()) {
     return false;
   }
-  
+
   return true;
 }
 
