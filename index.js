@@ -35,6 +35,8 @@ function Dilla (audioContext, options) {
 
   this.clock.on('data', this.updatePositionFromClock.bind(this));
   this.clock.pipe(this.scheduler).on('data', this.emitStep.bind(this));
+
+  this._keepAlive = this._keepAlive.bind(this);
 }
 
 inherits(Dilla, events.EventEmitter);
@@ -158,6 +160,13 @@ proto.clear = function clear (id) {
   }
 };
 
+proto._keepAlive = function _keepAlive () {
+  if (this.clock._state.playing) {
+    window.__lastDillaPosition = this._position;
+    window.requestAnimationFrame(this._keepAlive);
+  }
+}
+
 proto.start = function start () {
   var now = new Date().valueOf();
   var waited = now - loadTime;
@@ -167,6 +176,7 @@ proto.start = function start () {
 
   if (!this.clock._state.playing) {
     this.clock.start();
+    this._keepAlive();
     this.emit('playing');
   }
 };
