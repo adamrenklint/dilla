@@ -169,6 +169,8 @@ dilla.on('step', function (step) {
 - **1.3.0**
   - NEW: [Modulus operator](https://github.com/adamrenklint/dilla-expressions#modulus) expression
   - NEW: [Add custom matcher](https://github.com/adamrenklint/dilla-expressions#custom-matchers) with ```dilla.expressions.addMatcher```
+- **1.3.1**
+  - FIXED: Minifying dilla function names breaks everything
 
 ## License
 
