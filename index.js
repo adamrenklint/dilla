@@ -1,3 +1,5 @@
+/*jshint -W024 */
+
 var events = require('events');
 var inherits = require('util').inherits;
 var bopper = require('bopper');
