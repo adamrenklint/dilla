@@ -230,25 +230,6 @@ describe('dilla.setPosition (position)', function () {
   });
 });
 
-describe('dilla.isValidPositionString (position)', function () {
-  describe('when position is not valid format', function () {
-    it('should return false', function () {
-      expect(dilla.isValidPositionString()).to.equal(false);
-      expect(dilla.isValidPositionString(1)).to.equal(false);
-      expect(dilla.isValidPositionString('hjkasd')).to.equal(false);
-      expect(dilla.isValidPositionString('1.1')).to.equal(false);
-      expect(dilla.isValidPositionString('1.1.a')).to.equal(false);
-    });
-  });
-  describe('when position is valid format', function () {
-    it('should return true', function () {
-      expect(dilla.isValidPositionString('1.1.01')).to.equal(true);
-      expect(dilla.isValidPositionString('1.1.1')).to.equal(true);
-      expect(dilla.isValidPositionString('1.1.96')).to.equal(true);
-    });
-  });
-});
-
 describe('dilla.isPositionWithinBounds (position)', function () {
   describe('when position is out of bounds', function () {
     it('should return false', function () {

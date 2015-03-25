@@ -4,6 +4,8 @@ var bopper = require('bopper');
 var ditty = require('ditty');
 var expr = require('dilla-expressions');
 
+var checkValid = require('./lib/checkValid');
+
 var loadTime = new Date().valueOf();
 
 function Dilla (audioContext, options) {
@@ -57,9 +59,7 @@ proto.getPositionFromTime = function getPositionFromTime (time) {
 };
 
 proto.getPositionFromClockPosition = function getPositionFromClockPosition (position) {
-  if (typeof position !== 'number' || isNaN(position)) {
-    throw new Error('Invalid argument: clockPosition is not a valid number');
-  }
+  checkValid.number('clockPosition', position);
   if (position < 0) {
     return '0.0.00';
   }
@@ -86,7 +86,7 @@ proto.getClockPositionFromPosition = function getClockPositionFromPosition (posi
 };
 
 proto.getPositionWithOffset = function getPositionWithOffset (position, offset) {
-  if (!this.isValidPositionString(position)) {
+  if (!checkValid.positionString(position)) {
     throw new Error('Invalid argument: position is not a valid position string');
   }
   if (typeof offset !== 'number' || isNaN(offset) || offset % 1 !== 0) {
@@ -101,9 +101,7 @@ proto.getPositionWithOffset = function getPositionWithOffset (position, offset) 
 };
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
-  if (typeof ticks !== 'number' || ticks < 0 || isNaN(ticks)) {
-    throw new Error('Invalid argument: ticks is not a valid number');
-  }
+  checkValid.positiveNumber('ticks', ticks);
   return (1 / 96) * ticks;
 };
 
@@ -125,7 +123,7 @@ proto.normalizeNote = function normalizeNote (params) {
     throw new Error('Invalid argument: note params is not valid array');
   }
   var note = typeof params[1] === 'object' ? params[1] : typeof params[0] === 'object' ? params[0] : {};
-  var position = typeof params[0] === 'string' && this.isValidPositionString(params[0]) ? params[0] : typeof note.position === 'string' && this.isValidPositionString(note.position) ? note.position : null;
+  var position = typeof params[0] === 'string' && checkValid.positionString(params[0]) ? params[0] : typeof note.position === 'string' && checkValid.positionString(note.position) ? note.position : null;
   if (!position) {
     throw new Error('Invalid argument: position is not valid');
   }
@@ -237,12 +235,8 @@ proto.setPosition = function setPosition (position) {
   this.clock.setPosition(this.getClockPositionFromPosition(position));
 };
 
-proto.isValidPositionString = function isValidPositionString (position) {
-  return typeof position === 'string' && !!position.match(/\d\.\d\.\d+/);
-};
-
 proto.isPositionWithinBounds = function isPositionWithinBounds (position) {
-  if (!this.isValidPositionString(position)) {
+  if (!checkValid.positionString(position)) {
     return false;
   }
 
@@ -274,9 +268,7 @@ proto.beatsPerBar = function beatsPerBar () {
 };
 
 proto.setBeatsPerBar = function setBeatsPerBar (beats) {
-  if (typeof beats !== 'number' || beats < 0 || isNaN(beats)) {
-    throw new Error('Invalid argument: beats is not a valid number');
-  }
+  checkValid.positiveNumber('beats', beats);
   this._beatsPerBar = beats;
 };
 
@@ -285,9 +277,7 @@ proto.loopLength = function loopLength () {
 };
 
 proto.setLoopLength = function setLoopLength (bars) {
-  if (typeof bars !== 'number' || bars < 0 || isNaN(bars)) {
-    throw new Error('Invalid argument: bars is not a valid number');
-  }
+  checkValid.positiveNumber('bars', bars);
   this._loopLength = bars;
 };
 
