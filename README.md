@@ -77,6 +77,7 @@ dilla.start();
 ### Tutorials
 
 - [Making a boombap beat with dilla and Web Audio](http://adamrenklint.com/making-boombap-beat-with-dilla/)
+- [Using expressions in dilla](http://adamrenklint.com/using-expressions-in-dilla/)
 
 ### API
 
@@ -109,7 +110,7 @@ dilla.start();
 - A string in the format ```BAR.BEAT.TICK```
 - Where each part is a (1-based index) number
 - Tick values under 10 are padded with a leading zero
-- Can contain [expressions](https://github.com/adamrenklint/dilla-expressions) which are expanded by ```dilla.set()```
+- Can contain [expressions](http://adamrenklint.com/using-expressions-in-dilla/) which are expanded by ```dilla.set()```
 
 #### Note
 
@@ -175,6 +176,9 @@ dilla.on('step', function (step) {
 - **1.3.2**
   - FIXED: "step" event stops triggering when tab is put to background [#14](https://github.com/adamrenklint/dilla/issues/14)
   - FIXED: Metronome example is leaking, never stops oscillator [#15](https://github.com/adamrenklint/dilla/issues/15)
+- **1.3.3**
+  - DOCS: Added link to [expressions tutorial](http://adamrenklint.com/using-expressions-in-dilla/)
+  - CHANGED: Improved code complexity and test coverage
 
 ## License
 

@@ -230,42 +230,6 @@ describe('dilla.setPosition (position)', function () {
   });
 });
 
-describe('dilla.isValidPositionString (position)', function () {
-  describe('when position is not valid format', function () {
-    it('should return false', function () {
-      expect(dilla.isValidPositionString()).to.equal(false);
-      expect(dilla.isValidPositionString(1)).to.equal(false);
-      expect(dilla.isValidPositionString('hjkasd')).to.equal(false);
-      expect(dilla.isValidPositionString('1.1')).to.equal(false);
-      expect(dilla.isValidPositionString('1.1.a')).to.equal(false);
-    });
-  });
-  describe('when position is valid format', function () {
-    it('should return true', function () {
-      expect(dilla.isValidPositionString('1.1.01')).to.equal(true);
-      expect(dilla.isValidPositionString('1.1.1')).to.equal(true);
-      expect(dilla.isValidPositionString('1.1.96')).to.equal(true);
-    });
-  });
-});
-
-describe('dilla.isPositionWithinBounds (position)', function () {
-  describe('when position is out of bounds', function () {
-    it('should return false', function () {
-      expect(dilla.isPositionWithinBounds('0.0.01')).to.equal(false);
-      expect(dilla.isPositionWithinBounds('3.1.01')).to.equal(false);
-      expect(dilla.isPositionWithinBounds('2.5.01')).to.equal(false);
-      expect(dilla.isPositionWithinBounds('1.2.98')).to.equal(false);
-    });
-  });
-  describe('when position is within bounds', function () {
-    it('should return true', function () {
-      expect(dilla.isPositionWithinBounds('1.1.01')).to.equal(true);
-      expect(dilla.isPositionWithinBounds('2.4.96')).to.equal(true);
-    });
-  });
-});
-
 describe('dilla.getPositionFromClockPosition (clockPosition)', function () {
   describe('when clockPosition is not a valid number', function () {
     it('should throw an error', function () {
@@ -328,93 +292,6 @@ describe('dilla.getPositionWithOffset (position, offset)', function () {
       expect(dilla.getPositionWithOffset('1.1.01', 0)).to.equal('1.1.01');
       expect(dilla.getPositionWithOffset('1.1.01', 96)).to.equal('1.2.01');
       expect(dilla.getPositionWithOffset('1.3.73', 72)).to.equal('1.4.49');
-    });
-  });
-});
-
-describe('dilla.normalizeNote (noteParams)', function () {
-  describe('when "note" is not an array', function () {
-    it('should throw an error', function () {
-      expect(function () {
-        dilla.normalizeNote();
-      }).to.throw(/invalid argument/i);
-      expect(function () {
-        dilla.normalizeNote(false);
-      }).to.throw(/invalid argument/i);
-      expect(function () {
-        dilla.normalizeNote({});
-      }).to.throw(/invalid argument/i);
-      expect(function () {
-        dilla.normalizeNote('1.1.01');
-      }).to.throw(/invalid argument/i);
-    });
-  });
-  describe('when "note" is an array', function () {
-    describe('when no valid position is passed', function () {
-      it('should throw an error', function () {
-        expect(function () {
-          dilla.normalizeNote([]);
-        }).to.throw(/invalid argument/i);
-        expect(function () {
-          dilla.normalizeNote(['1.1.asd']);
-        }).to.throw(/invalid argument/i);
-        expect(function () {
-          dilla.normalizeNote([true]);
-        }).to.throw(/invalid argument/i);
-        expect(function () {
-          dilla.normalizeNote([123]);
-        }).to.throw(/invalid argument/i);
-      });
-    });
-    describe('when index 0 is a valid position string', function () {
-      it('should return a note object', function () {
-        expect(dilla.normalizeNote(['1.1.01'])).to.be.a('object');
-      });
-      it('should use index 0 as position', function () {
-        expect(dilla.normalizeNote(['1.1.01']).position).to.equal('1.1.01');
-      });
-      describe('when index 1 is a note object', function () {
-        it('should extend the note object with position', function () {
-          var note = { 'foo': 'bar' };
-          var returned = dilla.normalizeNote(['1.2.23', note]);
-          expect(returned.foo).to.equal('bar');
-          expect(returned.position).to.equal('1.2.23');
-        });
-        describe('when position is already defined on the note object', function () {
-          it('should overwrite the position with index 0', function () {
-            var note = { 'foo': 'bar', 'position': '1.2.32' };
-            var returned = dilla.normalizeNote(['1.2.23', note]);
-            expect(returned.foo).to.equal('bar');
-            expect(returned.position).to.equal('1.2.23');
-          });
-        });
-      });
-    });
-    describe('when index 0 is a note object', function () {
-      describe('when note object does not have a valid position', function () {
-        it('should throw an error', function () {
-          expect(function () {
-            dilla.normalizeNote({});
-          }).to.throw(/invalid argument/i);
-          expect(function () {
-            dilla.normalizeNote({ 'foo': 'bar' });
-          }).to.throw(/invalid argument/i);
-          expect(function () {
-            dilla.normalizeNote({ 'position': 12 });
-          }).to.throw(/invalid argument/i);
-          expect(function () {
-            dilla.normalizeNote({ 'position': '1.2.asd' });
-          }).to.throw(/invalid argument/i);
-        });
-      });
-      describe('when note object has a valid position', function () {
-        it('should return a note object', function () {
-          var note = { 'foo': 'bar', 'position': '1.2.32' };
-          var returned = dilla.normalizeNote([note]);
-          expect(returned.foo).to.equal('bar');
-          expect(returned.position).to.equal('1.2.32');
-        });
-      });
     });
   });
 });
