@@ -53,6 +53,9 @@ var bopper = require('bopper');
 var ditty = require('ditty');
 var expr = require('dilla-expressions');
 
+var checkValid = require('./lib/checkValid');
+var positionHelper = require('./lib/positionHelper');
+
 var loadTime = new Date().valueOf();
 
 function Dilla (audioContext, options) {
@@ -106,8 +109,10 @@ proto.getPositionFromTime = function getPositionFromTime (time) {
 };
 
 proto.getPositionFromClockPosition = function getPositionFromClockPosition (position) {
-  if (typeof position !== 'number' || isNaN(position)) throw new Error('Invalid argument: clockPosition is not a valid number');
-  if (position < 0) return '0.0.00';
+  checkValid.number('clockPosition', position);
+  if (position < 0) {
+    return '0.0.00';
+  }
   var beatsPerLoop = this._loopLength * this._beatsPerBar;
   var loops = Math.floor(position / beatsPerLoop) || 0;
   position = position - (loops * beatsPerLoop);
@@ -116,7 +121,9 @@ proto.getPositionFromClockPosition = function getPositionFromClockPosition (posi
   var beats = Math.floor(position);
   position = position - beats;
   var ticks = Math.floor(position * 96) + 1;
-  if (ticks < 10) ticks = '0' + ticks;
+  if (ticks < 10) {
+    ticks = '0' + ticks;
+  }
   return (bars + 1) + '.' + (beats + 1) + '.' + ticks;
 };
 
@@ -129,16 +136,22 @@ proto.getClockPositionFromPosition = function getClockPositionFromPosition (posi
 };
 
 proto.getPositionWithOffset = function getPositionWithOffset (position, offset) {
-  if (!this.isValidPositionString(position)) throw new Error('Invalid argument: position is not a valid position string');
-  if (typeof offset !== 'number' || isNaN(offset) || offset % 1 !== 0) throw new Error('Invalid argument: offset is not a valid number');
-  if (!offset) return position;
+  if (!checkValid.positionString(position)) {
+    throw new Error('Invalid argument: position is not a valid position string');
+  }
+  if (typeof offset !== 'number' || isNaN(offset) || offset % 1 !== 0) {
+    throw new Error('Invalid argument: offset is not a valid number');
+  }
+  if (!offset) {
+    return position;
+  }
   var clockPosition = this.getClockPositionFromPosition(position);
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
 };
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
-  if (typeof ticks !== 'number' || ticks < 0 || isNaN(ticks)) throw new Error('Invalid argument: ticks is not a valid number');
+  checkValid.positiveNumber('ticks', ticks);
   return (1 / 96) * ticks;
 };
 
@@ -148,24 +161,21 @@ proto.emitStep = function emitStep (step) {
   step.time = step.time + offset;
   step.clockPosition = step.position;
   step.position = step.event === 'start' ? note.position : this.getPositionWithOffset(note.position, note.duration || 0);
-  if (step.event === 'stop'  && step.position === note.position) return;
+  if (step.event === 'stop'  && step.position === note.position) {
+    return;
+  }
   step.context = this.context;
   this.emit('step', step);
 };
 
-proto.normalizeNote = function normalizeNote (params) {
-  if (!params || !Array.isArray(params)) throw new Error('Invalid argument: note params is not valid array');
-  var note = typeof params[1] === 'object' ? params[1] : typeof params[0] === 'object' ? params[0] : {};
-  var position = typeof params[0] === 'string' && this.isValidPositionString(params[0]) ? params[0] : typeof note.position === 'string' && this.isValidPositionString(note.position) ? note.position : null;
-  if (!position) throw new Error('Invalid argument: position is not valid');
-  note.position = position;
-  return note;
-};
-
 proto.set = function set (id, notes) {
   var self = this;
-  if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
-  if (!notes || !Array.isArray(notes)) throw new Error('Invalid argument: notes is not a valid array');
+  if (typeof id !== 'string') {
+    throw new Error('Invalid argument: id is not a valid string');
+  }
+  if (!notes || !Array.isArray(notes)) {
+    throw new Error('Invalid argument: notes is not a valid array');
+  }
 
   notes = this.expressions(notes.map(function (note) {
     if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
@@ -176,9 +186,9 @@ proto.set = function set (id, notes) {
     'beatsPerBar': this.beatsPerBar(),
     'barsPerLoop': this.loopLength()
   }).filter(function (note) {
-    return self.isPositionWithinBounds(note[0]);
+    return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
   }).map(function (note) {
-    var normal = self.normalizeNote(note);
+    var normal = positionHelper.normalizeNote(note);
     return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
 
@@ -186,7 +196,9 @@ proto.set = function set (id, notes) {
 };
 
 proto.get = function get (id) {
-  if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
+  if (typeof id !== 'string') {
+    throw new Error('Invalid argument: id is not a valid string');
+  }
   return (this.scheduler.get(id) || []).map(function (note) {
     return note[4];
   });
@@ -199,7 +211,9 @@ proto.channels = function channels () {
 proto.clear = function clear (id) {
   var self = this;
   if (id) {
-    if (typeof id !== 'string') throw new Error('Invalid argument: id is not a valid string');
+    if (typeof id !== 'string') {
+      throw new Error('Invalid argument: id is not a valid string');
+    }
     this.set(id, []);
   }
   else {
@@ -251,30 +265,11 @@ proto.position = function position () {
 };
 
 proto.setPosition = function setPosition (position) {
-  if (!this.isPositionWithinBounds(position)) throw new Error('Invalid argument: position is not valid');
+  if (!positionHelper.isPositionWithinBounds(position, this.loopLength(), this.beatsPerBar())) {
+    throw new Error('Invalid argument: position is not valid');
+  }
   this._position = position;
   this.clock.setPosition(this.getClockPositionFromPosition(position));
-};
-
-proto.isValidPositionString = function isValidPositionString (position) {
-  return typeof position === 'string' && !!position.match(/\d\.\d\.\d+/);
-};
-
-proto.isPositionWithinBounds = function isPositionWithinBounds (position) {
-  if (!this.isValidPositionString(position)) {
-    return false;
-  }
-
-  var fragments = position.split('.');
-  var bars = parseInt(fragments[0], 10) - 1;
-  var beats = parseInt(fragments[1], 10) - 1;
-  var ticks = parseInt(fragments[2], 10) - 1;
-
-  if (ticks < 0 || beats < 0 || bars < 0 || ticks >= 96 || beats >= this.beatsPerBar() || bars >= this.loopLength()) {
-    return false;
-  }
-
-  return true;
 };
 
 proto.tempo = function tempo () {
@@ -282,7 +277,9 @@ proto.tempo = function tempo () {
 };
 
 proto.setTempo = function setTempo (tempo) {
-  if (typeof tempo !== 'number' || tempo < 0 || isNaN(tempo)) throw new Error('Invalid argument: tempo is not a valid number');
+  if (typeof tempo !== 'number' || tempo < 0 || isNaN(tempo)) {
+    throw new Error('Invalid argument: tempo is not a valid number');
+  }
   this.clock.setTempo(tempo);
 };
 
@@ -291,7 +288,7 @@ proto.beatsPerBar = function beatsPerBar () {
 };
 
 proto.setBeatsPerBar = function setBeatsPerBar (beats) {
-  if (typeof beats !== 'number' || beats < 0 || isNaN(beats)) throw new Error('Invalid argument: beats is not a valid number');
+  checkValid.positiveNumber('beats', beats);
   this._beatsPerBar = beats;
 };
 
@@ -300,13 +297,74 @@ proto.loopLength = function loopLength () {
 };
 
 proto.setLoopLength = function setLoopLength (bars) {
-  if (typeof bars !== 'number' || bars < 0 || isNaN(bars)) throw new Error('Invalid argument: bars is not a valid number');
+  checkValid.positiveNumber('bars', bars);
   this._loopLength = bars;
 };
 
 module.exports = Dilla;
 
-},{"bopper":3,"dilla-expressions":30,"ditty":31,"events":11,"util":29}],3:[function(require,module,exports){
+},{"./lib/checkValid":3,"./lib/positionHelper":4,"bopper":5,"dilla-expressions":32,"ditty":33,"events":13,"util":31}],3:[function(require,module,exports){
+var checkValid = {
+
+  'number': function checkValidNumber (name, value) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      throw new Error('Invalid argument: ' + name + ' is not a valid number');
+    }
+  },
+
+  'positiveNumber': function checkValidPositiveNumber (name, value) {
+    checkValid.number(name, value);
+    if (value < 0) {
+      throw new Error('Invalid argument: ' + name + ' is not a valid positive number');
+    }
+  },
+
+  'positionString': function checkValidPositionString (position) {
+    return typeof position === 'string' && !!position.match(/\d\.\d\.\d+/);
+  }
+};
+
+module.exports = checkValid;
+
+},{}],4:[function(require,module,exports){
+var checkValid = require('./checkValid');
+
+var positionHelper = {
+
+  'normalizeNote': function nomalizeNote (params) {
+    if (!params || !Array.isArray(params)) {
+      throw new Error('Invalid argument: note params is not valid array');
+    }
+    var note = typeof params[1] === 'object' ? params[1] : typeof params[0] === 'object' ? params[0] : {};
+    var position = typeof params[0] === 'string' && checkValid.positionString(params[0]) ? params[0] : typeof note.position === 'string' && checkValid.positionString(note.position) ? note.position : null;
+    if (!position) {
+      throw new Error('Invalid argument: position is not valid');
+    }
+    note.position = position;
+    return note;
+  },
+
+  'isPositionWithinBounds': function isPositionWithinBounds (position, barsPerLoop, beatsPerBar) {
+    if (!checkValid.positionString(position)) {
+      return false;
+    }
+
+    var fragments = position.split('.');
+    var bars = parseInt(fragments[0], 10) - 1;
+    var beats = parseInt(fragments[1], 10) - 1;
+    var ticks = parseInt(fragments[2], 10) - 1;
+
+    if (ticks < 0 || beats < 0 || bars < 0 || ticks >= 96 || beats >= beatsPerBar || bars >= barsPerLoop) {
+      return false;
+    }
+
+    return true;
+  }
+};
+
+module.exports = positionHelper;
+
+},{"./checkValid":3}],5:[function(require,module,exports){
 var Stream = require('stream')
 var Event = require('geval')
 
@@ -464,7 +522,7 @@ function bopperTick(e){
   }
 
 }
-},{"geval":5,"stream":26,"util":29}],4:[function(require,module,exports){
+},{"geval":7,"stream":28,"util":31}],6:[function(require,module,exports){
 module.exports = Event
 
 function Event() {
@@ -492,7 +550,7 @@ function Event() {
     }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var Event = require('./event.js')
 
 module.exports = Source
@@ -505,9 +563,9 @@ function Source(broadcaster) {
     return tuple.listen
 }
 
-},{"./event.js":4}],6:[function(require,module,exports){
+},{"./event.js":6}],8:[function(require,module,exports){
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -1840,7 +1898,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":8,"ieee754":9,"is-array":10}],8:[function(require,module,exports){
+},{"base64-js":10,"ieee754":11,"is-array":12}],10:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -1966,7 +2024,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 exports.read = function(buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
@@ -2052,7 +2110,7 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128;
 };
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
 /**
  * isArray
@@ -2087,7 +2145,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2390,7 +2448,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2415,12 +2473,12 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2480,10 +2538,10 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":16}],16:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":18}],18:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2576,7 +2634,7 @@ function forEach (xs, f) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_readable":18,"./_stream_writable":20,"_process":14,"core-util-is":21,"inherits":12}],17:[function(require,module,exports){
+},{"./_stream_readable":20,"./_stream_writable":22,"_process":16,"core-util-is":23,"inherits":14}],19:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2624,7 +2682,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":19,"core-util-is":21,"inherits":12}],18:[function(require,module,exports){
+},{"./_stream_transform":21,"core-util-is":23,"inherits":14}],20:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3579,7 +3637,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":16,"_process":14,"buffer":7,"core-util-is":21,"events":11,"inherits":12,"isarray":13,"stream":26,"string_decoder/":27,"util":6}],19:[function(require,module,exports){
+},{"./_stream_duplex":18,"_process":16,"buffer":9,"core-util-is":23,"events":13,"inherits":14,"isarray":15,"stream":28,"string_decoder/":29,"util":8}],21:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3790,7 +3848,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":16,"core-util-is":21,"inherits":12}],20:[function(require,module,exports){
+},{"./_stream_duplex":18,"core-util-is":23,"inherits":14}],22:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4271,7 +4329,7 @@ function endWritable(stream, state, cb) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":16,"_process":14,"buffer":7,"core-util-is":21,"inherits":12,"stream":26}],21:[function(require,module,exports){
+},{"./_stream_duplex":18,"_process":16,"buffer":9,"core-util-is":23,"inherits":14,"stream":28}],23:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4381,10 +4439,10 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":7}],22:[function(require,module,exports){
+},{"buffer":9}],24:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":17}],23:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":19}],25:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = require('stream');
 exports.Readable = exports;
@@ -4393,13 +4451,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":16,"./lib/_stream_passthrough.js":17,"./lib/_stream_readable.js":18,"./lib/_stream_transform.js":19,"./lib/_stream_writable.js":20,"stream":26}],24:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":18,"./lib/_stream_passthrough.js":19,"./lib/_stream_readable.js":20,"./lib/_stream_transform.js":21,"./lib/_stream_writable.js":22,"stream":28}],26:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":19}],25:[function(require,module,exports){
+},{"./lib/_stream_transform.js":21}],27:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":20}],26:[function(require,module,exports){
+},{"./lib/_stream_writable.js":22}],28:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4528,7 +4586,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":11,"inherits":12,"readable-stream/duplex.js":15,"readable-stream/passthrough.js":22,"readable-stream/readable.js":23,"readable-stream/transform.js":24,"readable-stream/writable.js":25}],27:[function(require,module,exports){
+},{"events":13,"inherits":14,"readable-stream/duplex.js":17,"readable-stream/passthrough.js":24,"readable-stream/readable.js":25,"readable-stream/transform.js":26,"readable-stream/writable.js":27}],29:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4751,14 +4809,14 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":7}],28:[function(require,module,exports){
+},{"buffer":9}],30:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5348,7 +5406,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":28,"_process":14,"inherits":12}],30:[function(require,module,exports){
+},{"./support/isBuffer":30,"_process":16,"inherits":14}],32:[function(require,module,exports){
 function isPlainPosition (position) {
   return !!position.match(/^\d+\.\d+\.\d+$/);
 }
@@ -5455,7 +5513,7 @@ function expressions (notes, options) {
 expressions.addMatcher = addMatcher;
 module.exports = expressions;
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = Ditty
 
 var Stream = require('stream')
@@ -5653,4 +5711,4 @@ function getAbsolutePosition(pos, start, length){
 function shouldSendImmediately(message, loop){
   return message.event === 'stop' && (!loop || !loop.length)
 }
-},{"stream":26,"util":29}]},{},[1]);
+},{"stream":28,"util":31}]},{},[1]);
