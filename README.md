@@ -1,4 +1,4 @@
-# dilla
+# Dilla
 
 [![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Build Status](https://travis-ci.org/adamrenklint/dilla.svg)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Test Coverage](https://codeclimate.com/github/adamrenklint/dilla/badges/coverage.svg)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla)
 
@@ -76,8 +76,8 @@ dilla.start();
 
 ### Tutorials
 
-- [Making a boombap beat with dilla and Web Audio](http://adamrenklint.com/making-boombap-beat-with-dilla/)
-- [Using expressions in dilla](http://adamrenklint.com/using-expressions-in-dilla/)
+- [Making a boombap beat with Dilla and the Web Audio API](http://adamrenklint.com/making-boombap-beat-with-dilla/)
+- [Using expressions in Dilla](http://adamrenklint.com/using-expressions-in-dilla/)
 
 ### API
 
@@ -179,6 +179,8 @@ dilla.on('step', function (step) {
 - **1.3.3**
   - DOCS: Added link to [expressions tutorial](http://adamrenklint.com/using-expressions-in-dilla/)
   - CHANGED: Improved code complexity and test coverage
+- **1.3.4**
+  - DOCS: Fix typos
 
 ## License
 
