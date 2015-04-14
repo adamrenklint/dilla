@@ -5454,18 +5454,20 @@ function makeExpressionFunction (expression) {
       if (exprFragment === 'odd' && positionFragments[index] % 2 === 1) return;
       if (exprFragment === '*') return;
 
-      // console.log('foo', exprFragment, typeof exprFragment);
       if (typeof exprFragment === 'string' && exprFragment.indexOf('%') >= 0) {
-        // console.log(exprFragment)
-
         var nums = exprFragment.split('%');
         var offset = parseInt(nums[0] || 1, 10);
         var mod = parseInt(nums[1], 10);
-        var res = (positionFragments[index] - offset) % mod;
-        if (!res) return;
+        var value = positionFragments[index] - offset;
+        if (mod === 1) {
+          if (value >= 0) return;
+        }
+        else {
+          var res = value % mod;
+          if (!res) return;
+        }
       }
       // position is invalid, break out early
-      // console.log('>', position, positionFragments);
       valid = false;
       return true;
     });
