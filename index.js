@@ -1,7 +1,7 @@
 var events = require('events');
 var inherits = require('util').inherits;
 var bopper = require('bopper');
-var ditty = require('ditty');
+var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
 
 var checkValid = require('./lib/checkValid');
