@@ -9,9 +9,9 @@ COVERAGE_LIMIT = 75
 install:
 	@npm install
 
-example: 
+example:
 	@node node_modules/beefy/bin/beefy example.js
-	
+
 test:
 	@$(MOCHA) -s 10
 
@@ -19,7 +19,7 @@ watch:
 	@$(MOCHA) -w -s 10
 
 coverage:
-	@$(ISTANBUL) cover $(_MOCHA) -- test/*.test.js -R dot
+	@$(ISTANBUL) cover $(_MOCHA) -x vendor/*.js -- test/*.test.js -R dot
 
 check-coverage: coverage
 	@$(ISTANBUL) check-coverage --statement $(COVERAGE_LIMIT) --branch $(COVERAGE_LIMIT) --function $(COVERAGE_LIMIT)
