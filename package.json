@@ -26,8 +26,7 @@
   "homepage": "https://github.com/adamrenklint/dilla",
   "dependencies": {
     "bopper": "^2.8.0",
-    "dilla-expressions": "^1.1.2",
-    "ditty": "^2.5.0"
+    "dilla-expressions": "^1.1.2"
   },
   "devDependencies": {
     "beefy": "^2.1.3",
