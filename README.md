@@ -183,9 +183,10 @@ dilla.on('step', function (step) {
   - DOCS: Fix typos
 - **1.3.5**
   - FIXED: Updated [dilla-expressions](https://github.com/adamrenklint/dilla-expressions) to solve [modulus by 1 issue](https://github.com/adamrenklint/dilla-expressions/commit/889be0251a9837c062abc8452328759627582903)
-- **1.4.0-beta2**
+- **1.4.0**
   - ADDED: Define ```options.expandNote(note)``` to transform note after expression expansion
   - CHANGED: Use local version of Ditty with longer lookahead
+  - CHANGED: Use dilla-expressions v1.2, with greater than and less than operators
 
 ## License
 
