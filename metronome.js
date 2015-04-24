@@ -50,7 +50,7 @@ dilla.start();
 var events = require('events');
 var inherits = require('util').inherits;
 var bopper = require('bopper');
-var ditty = require('ditty');
+var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
 
 var checkValid = require('./lib/checkValid');
@@ -77,6 +77,7 @@ function Dilla (audioContext, options) {
   this.scheduler = ditty();
 
   this.expressions = expr;
+  this.expandNote = options.expandNote;
 
   this.upstartWait = options.upstartWait || 250;
   this.setTempo(options.tempo || 120);
@@ -188,6 +189,9 @@ proto.set = function set (id, notes) {
   }).filter(function (note) {
     return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
   }).map(function (note) {
+    if (self.expandNote) {
+      note = self.expandNote(note);
+    }
     var normal = positionHelper.normalizeNote(note);
     return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
@@ -303,7 +307,7 @@ proto.setLoopLength = function setLoopLength (bars) {
 
 module.exports = Dilla;
 
-},{"./lib/checkValid":3,"./lib/positionHelper":4,"bopper":5,"dilla-expressions":32,"ditty":33,"events":13,"util":31}],3:[function(require,module,exports){
+},{"./lib/checkValid":3,"./lib/positionHelper":4,"./vendor/ditty":33,"bopper":5,"dilla-expressions":32,"events":13,"util":31}],3:[function(require,module,exports){
 var checkValid = {
 
   'number': function checkValidNumber (name, value) {
@@ -5442,6 +5446,9 @@ function addMatcher (matcher) {
   matchers.push(matcher);
 }
 
+var gtRe = />(\d+)/;
+var ltRe = /<(\d+)/;
+
 function makeExpressionFunction (expression) {
   var exprFragments = getFragments(expression);
   // console.log(exprFragments, expression)
@@ -5450,6 +5457,26 @@ function makeExpressionFunction (expression) {
     var valid = true;
     exprFragments.some(function (exprFragment, index) {
       if (typeof exprFragment === 'number' && positionFragments[index] === exprFragment) return;
+      exprFragment = '' + exprFragment;
+
+      if (ltRe.test(exprFragment)) {
+        var ltVal = exprFragment.match(ltRe)[1];
+        exprFragment = exprFragment.replace(ltRe, '') || '*';
+        if (positionFragments[index] >= ltVal) {
+          valid = false;
+          return true;
+        }
+      }
+
+      if (gtRe.test(exprFragment)) {
+        var gtVal = exprFragment.match(gtRe)[1];
+        exprFragment = exprFragment.replace(gtRe, '') || '*';
+        if (positionFragments[index] <= gtVal) {
+          valid = false;
+          return true;
+        }
+      }
+
       if (exprFragment === 'even' && positionFragments[index] % 2 === 0) return;
       if (exprFragment === 'odd' && positionFragments[index] % 2 === 1) return;
       if (exprFragment === '*') return;
@@ -5592,8 +5619,8 @@ proto.getDescriptors = function(){
     var id = state.ids[i]
     if (state.loops[id]){
       result.push({
-        id: id, 
-        length: state.lengths[id], 
+        id: id,
+        length: state.lengths[id],
         events: state.loops[id]
       })
     }
@@ -5615,7 +5642,7 @@ proto.write = function(obj){
 
 proto._transform = function(obj){
   var begin = window.performance.now()
-  var endAt = begin + (obj.duration * 900)
+  var endAt = begin + (obj.duration * 5000)
 
   var state = this._state
   var from = obj.from
@@ -5660,7 +5687,7 @@ proto._transform = function(obj){
         var duration = event[1] * beatDuration
         var startTime = time + delta
         var endTime = startTime + duration
-        
+
         localQueue.push({
           id: id,
           event: 'start',
@@ -5713,4 +5740,5 @@ function getAbsolutePosition(pos, start, length){
 function shouldSendImmediately(message, loop){
   return message.event === 'stop' && (!loop || !loop.length)
 }
+
 },{"stream":28,"util":31}]},{},[1]);
