@@ -1,7 +1,7 @@
 var events = require('events');
 var inherits = require('util').inherits;
 var bopper = require('bopper');
-var ditty = require('ditty');
+var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
 
 var checkValid = require('./lib/checkValid');
@@ -28,6 +28,7 @@ function Dilla (audioContext, options) {
   this.scheduler = ditty();
 
   this.expressions = expr;
+  this.expandNote = options.expandNote;
 
   this.upstartWait = options.upstartWait || 250;
   this.setTempo(options.tempo || 120);
@@ -139,6 +140,9 @@ proto.set = function set (id, notes) {
   }).filter(function (note) {
     return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
   }).map(function (note) {
+    if (self.expandNote) {
+      note = self.expandNote(note);
+    }
     var normal = positionHelper.normalizeNote(note);
     return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
