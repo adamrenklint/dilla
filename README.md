@@ -1,6 +1,8 @@
 # Dilla
 
-[![NPM version](https://badge.fury.io/js/dilla.png)](http://badge.fury.io/js/dilla) [![Build Status](https://travis-ci.org/adamrenklint/dilla.svg)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://codeclimate.com/github/adamrenklint/dilla.png)](https://codeclimate.com/github/adamrenklint/dilla) [![Test Coverage](https://codeclimate.com/github/adamrenklint/dilla/badges/coverage.svg)](https://codeclimate.com/github/adamrenklint/dilla) [![Dependency Status](https://david-dm.org/adamrenklint/dilla.png?theme=shields.io)](https://david-dm.org/adamrenklint/dilla)
+[![npm](https://img.shields.io/npm/v/dilla.svg?style=flat-square)](https://www.npmjs.com/package/dilla) [![npm](https://img.shields.io/npm/dm/dilla.svg?style=flat-square)](https://www.npmjs.com/package/dilla) [![GitHub stars](https://img.shields.io/github/stars/adamrenklint/dilla.svg?style=flat-square)](https://github.com/adamrenklint/dilla/stargazers) [![GitHub forks](https://img.shields.io/github/forks/adamrenklint/dilla.svg?style=flat-square)](https://github.com/adamrenklint/dilla/network)
+
+[![Travis branch](https://img.shields.io/travis/adamrenklint/dilla.svg?style=flat-square)](https://travis-ci.org/adamrenklint/dilla) [![Code Climate](https://img.shields.io/codeclimate/github/adamrenklint/dilla.svg?style=flat-square)](https://codeclimate.com/github/adamrenklint/dilla) [![Code Climate](https://img.shields.io/codeclimate/coverage/github/adamrenklint/dilla.svg?style=flat-square)](https://codeclimate.com/github/adamrenklint/dilla) [![David dependencies](https://img.shields.io/david/adamrenklint/dilla.svg?style=flat-square)](https://david-dm.org/adamrenklint/dilla) [![David devDependencies](https://img.shields.io/david/dev/adamrenklint/dilla.svg?style=flat-square)](https://david-dm.org/adamrenklint/dilla#info=devDependencies)
 
 > Schedule looped playback of Web Audio notes at 96 ticks per beat
 
@@ -187,6 +189,8 @@ dilla.on('step', function (step) {
   - ADDED: Define ```options.expandNote(note)``` to transform note after expression expansion
   - CHANGED: Use local version of Ditty with longer lookahead
   - CHANGED: Use dilla-expressions v1.2, with greater than and less than operators
+- **1.5.0-beta**
+  - CHANGED: Use dilla-expressions v2.0, with 25-1500 times better performance
 
 ## License
 
