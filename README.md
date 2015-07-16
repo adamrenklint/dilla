@@ -189,8 +189,9 @@ dilla.on('step', function (step) {
   - ADDED: Define ```options.expandNote(note)``` to transform note after expression expansion
   - CHANGED: Use local version of Ditty with longer lookahead
   - CHANGED: Use dilla-expressions v1.2, with greater than and less than operators
-- **1.5.0-beta**
+- **1.5.0**
   - CHANGED: Use dilla-expressions v2.0, with 25-1500 times better performance
+  - FIXED: Use prefixed AudioContext in Safari
 
 ## License
 

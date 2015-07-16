@@ -1,5 +1,5 @@
 var Dilla = require('./index');
-var audioContext = new AudioContext();
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 var dilla = new Dilla(audioContext);
 
 var high = {
@@ -17,7 +17,7 @@ dilla.set('metronome', [
 ]);
 
 function draw () {
-  document.body.innerText = dilla.position();
+  document.body.textContent = dilla.position();
   window.requestAnimationFrame(draw);
 }
 draw();
