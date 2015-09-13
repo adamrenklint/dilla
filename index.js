@@ -3,6 +3,7 @@ var inherits = require('util').inherits;
 var bopper = require('bopper');
 var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
+var memoize = require('meemo');
 
 var checkValid = require('./lib/checkValid');
 var positionHelper = require('./lib/positionHelper');
@@ -79,15 +80,15 @@ proto.getPositionFromClockPosition = function getPositionFromClockPosition (posi
   return (bars + 1) + '.' + (beats + 1) + '.' + ticks;
 };
 
-proto.getClockPositionFromPosition = function getClockPositionFromPosition (position) {
+proto.getClockPositionFromPosition = memoize(function getClockPositionFromPosition (position) {
   var parts = position.split('.');
   var bars = parseInt(parts[0], 10) - 1;
   var beats = parseInt(parts[1], 10) - 1;
   var ticks = parseInt(parts[2], 10) - 1;
   return (bars * this._beatsPerBar) + beats + (ticks / 96);
-};
+});
 
-proto.getPositionWithOffset = function getPositionWithOffset (position, offset) {
+proto.getPositionWithOffset = memoize(function getPositionWithOffset (position, offset) {
   if (!checkValid.positionString(position)) {
     throw new Error('Invalid argument: position is not a valid position string');
   }
@@ -100,7 +101,9 @@ proto.getPositionWithOffset = function getPositionWithOffset (position, offset) 
   var clockPosition = this.getClockPositionFromPosition(position);
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
-};
+}, function (position, offset) {
+  return position + '//' + offset;
+});
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
   checkValid.positiveNumber('ticks', ticks);
@@ -112,7 +115,7 @@ proto.emitStep = function emitStep (step) {
   var note = step.args = step.args[0];
   step.time = step.time + offset;
   step.clockPosition = step.position;
-  step.position = step.event === 'start' ? note.position : this.getPositionWithOffset(note.position, note.duration || 0);
+  step.position = step.event === 'start' ? note.position : note.duration ?  this.getPositionWithOffset(note.position, note.duration) : note.position;
   if (step.event === 'stop'  && step.position === note.position) {
     return;
   }
@@ -181,7 +184,7 @@ proto.clear = function clear (id) {
 proto._keepAlive = function _keepAlive () {
   if (this.clock._state.playing) {
     window.__lastDillaPosition = this._position;
-    window.requestAnimationFrame(this._keepAlive);
+    setTimeout(window.requestAnimationFrame.bind(null, this._keepAlive), 100);
   }
 };
 
