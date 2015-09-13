@@ -49,7 +49,7 @@ dilla.start();
 },{"./index":2}],2:[function(require,module,exports){
 var events = require('events');
 var inherits = require('util').inherits;
-var bopper = require('bopper');
+var bopper = require('./vendor/bopper');
 var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
 var memoize = require('meemo');
@@ -310,7 +310,7 @@ proto.setLoopLength = function setLoopLength (bars) {
 
 module.exports = Dilla;
 
-},{"./lib/checkValid":3,"./lib/positionHelper":4,"./vendor/ditty":34,"bopper":5,"dilla-expressions":32,"events":13,"meemo":33,"util":31}],3:[function(require,module,exports){
+},{"./lib/checkValid":3,"./lib/positionHelper":4,"./vendor/bopper":33,"./vendor/ditty":34,"dilla-expressions":29,"events":10,"meemo":32,"util":28}],3:[function(require,module,exports){
 var checkValid = {
 
   'number': function checkValidNumber (name, value) {
@@ -374,232 +374,9 @@ var positionHelper = {
 
 module.exports = positionHelper;
 
-},{"./checkValid":3,"meemo":33}],5:[function(require,module,exports){
-var Stream = require('stream')
-var Event = require('geval')
+},{"./checkValid":3,"meemo":32}],5:[function(require,module,exports){
 
-var inherits = require('util').inherits
-
-module.exports = Bopper
-
-function Bopper(audioContext){
-  if (!(this instanceof Bopper)){
-    return new Bopper(audioContext)
-  }
-
-  var self = this
-
-  Stream.call(this)
-  this.readable = true
-  this.writable = false
-
-  this.context = audioContext
-  var processor = this._processor = audioContext.createScriptProcessor(512, 1, 1)
-
-  var handleTick = bopperTick.bind(this)
-  this._processor.onaudioprocess = handleTick
-
-  var tempo = 120
-  var cycleLength = (1 / audioContext.sampleRate) * this._processor.bufferSize
-
-  this._state = {
-    lastTo: 0,
-    lastEndTime: 0,
-    playing: false,
-    bpm: tempo,
-    beatDuration: 60 / tempo,
-    increment: (tempo / 60) * cycleLength,
-    cycleLength: cycleLength,
-    preCycle: 4,
-  }
-
-  // frp version
-  this.onSchedule = Event(function(broadcast){
-    self.on('data', broadcast)
-  })
-
-  processor.connect(audioContext.destination)
-}
-
-inherits(Bopper, Stream)
-
-var proto = Bopper.prototype
-
-
-proto.start = function(){
-  this._state.playing = true
-  this.emit('start')
-}
-
-proto.stop = function(){
-  this._state.playing = false
-  this.emit('stop')
-}
-
-proto.schedule = function(duration) {
-  var state = this._state
-  var currentTime = this.context.currentTime
-
-  var endTime = this.context.currentTime + duration
-  var time = state.lastEndTime
-
-  if (endTime >= time) {
-    state.lastEndTime = endTime
-
-    if (state.playing){
-      var duration = endTime - time
-      var length = duration / state.beatDuration
-
-      var from = state.lastTo
-      var to = from + length
-      state.lastTo = to
-
-      // skip if getting behind
-      //if ((currentTime - (state.cycleLength*3)) < time){
-        this._schedule(time, from, to)
-      //}
-    }
-  }
-
-}
-
-proto.setTempo = function(tempo){
-  var bps = tempo/60
-  var state = this._state
-  state.beatDuration = 60/tempo
-  state.increment = bps * state.cycleLength
-  state.bpm = tempo
-  this.emit('tempo', state.bpm)
-}
-
-proto.getTempo = function(){
-  return this._state.bpm
-}
-
-proto.isPlaying = function(){
-  return this._state.playing
-}
-
-proto.setPosition = function(position){
-  this._state.lastTo = parseFloat(position)
-}
-
-proto.setSpeed = function(multiplier){
-  var state = this._state
-
-  multiplier = parseFloat(multiplier) || 0
-
-  var tempo = state.bpm * multiplier
-  var bps = tempo/60
-
-  state.beatDuration = 60/tempo
-  state.increment = bps * state.cycleLength
-}
-
-
-proto.getPositionAt = function(time){
-  var state = this._state
-  var delta = state.lastEndTime - time
-  return state.lastTo - (delta / state.beatDuration)
-}
-
-proto.getTimeAt = function(position){
-  var state = this._state
-  var positionOffset = this.getCurrentPosition() - position
-  return this.context.currentTime - (positionOffset * state.beatDuration)
-}
-
-proto.getCurrentPosition = function(){
-  return this.getPositionAt(this.context.currentTime)
-}
-
-proto.getNextScheduleTime = function(){
-  var state = this._state
-  return state.lastEndTime
-}
-
-proto.getBeatDuration = function(){
-  var state = this._state
-  return state.beatDuration
-}
-
-var __data = {
-  from: 0,
-  to: 0,
-  time: 0,
-  duration: 0,
-  beatDuration: 0
-}
-
-proto._schedule = function(time, from, to){
-  var state = this._state
-  var duration = (to - from) * state.beatDuration
-  __data.from = from;
-  __data.to = to;
-  __data.time = time;
-  __data.duration = duration;
-  __data.beatDuration = state.beatDuration;
-
-  // console.log('data', __data);
-  this.emit('data', __data);
-  // this.emit('data', {
-  //   from: from,
-  //   to: to,
-  //   time: time,
-  //   duration: duration,
-  //   beatDuration: state.beatDuration
-  // })
-}
-
-function bopperTick(e){
-  var state = this._state
-  this.schedule(state.cycleLength * state.preCycle)
-}
-
-},{"geval":7,"stream":28,"util":31}],6:[function(require,module,exports){
-module.exports = Event
-
-function Event() {
-    var listeners = []
-
-    return { broadcast: broadcast, listen: event }
-
-    function broadcast(value) {
-        for (var i = 0; i < listeners.length; i++) {
-            listeners[i](value)
-        }
-    }
-
-    function event(listener) {
-        listeners.push(listener)
-
-        return removeListener
-
-        function removeListener() {
-            var index = listeners.indexOf(listener)
-            if (index !== -1) {
-                listeners.splice(index, 1)
-            }
-        }
-    }
-}
-
-},{}],7:[function(require,module,exports){
-var Event = require('./event.js')
-
-module.exports = Source
-
-function Source(broadcaster) {
-    var tuple = Event()
-
-    broadcaster(tuple.broadcast)
-
-    return tuple.listen
-}
-
-},{"./event.js":6}],8:[function(require,module,exports){
-
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -2134,7 +1911,7 @@ function blitBuffer (src, dst, offset, length) {
   return i
 }
 
-},{"base64-js":10,"ieee754":11,"is-array":12}],10:[function(require,module,exports){
+},{"base64-js":7,"ieee754":8,"is-array":9}],7:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -2260,7 +2037,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],11:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -2346,7 +2123,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],12:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
 /**
  * isArray
@@ -2381,7 +2158,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],13:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2684,7 +2461,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],14:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2709,12 +2486,12 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],15:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],16:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2807,10 +2584,10 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],17:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":18}],18:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":15}],15:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2903,7 +2680,7 @@ function forEach (xs, f) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_readable":20,"./_stream_writable":22,"_process":16,"core-util-is":23,"inherits":14}],19:[function(require,module,exports){
+},{"./_stream_readable":17,"./_stream_writable":19,"_process":13,"core-util-is":20,"inherits":11}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2951,7 +2728,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":21,"core-util-is":23,"inherits":14}],20:[function(require,module,exports){
+},{"./_stream_transform":18,"core-util-is":20,"inherits":11}],17:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3906,7 +3683,7 @@ function indexOf (xs, x) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":18,"_process":16,"buffer":9,"core-util-is":23,"events":13,"inherits":14,"isarray":15,"stream":28,"string_decoder/":29,"util":8}],21:[function(require,module,exports){
+},{"./_stream_duplex":15,"_process":13,"buffer":6,"core-util-is":20,"events":10,"inherits":11,"isarray":12,"stream":25,"string_decoder/":26,"util":5}],18:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4117,7 +3894,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":18,"core-util-is":23,"inherits":14}],22:[function(require,module,exports){
+},{"./_stream_duplex":15,"core-util-is":20,"inherits":11}],19:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4598,7 +4375,7 @@ function endWritable(stream, state, cb) {
 }
 
 }).call(this,require('_process'))
-},{"./_stream_duplex":18,"_process":16,"buffer":9,"core-util-is":23,"inherits":14,"stream":28}],23:[function(require,module,exports){
+},{"./_stream_duplex":15,"_process":13,"buffer":6,"core-util-is":20,"inherits":11,"stream":25}],20:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4708,10 +4485,10 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":9}],24:[function(require,module,exports){
+},{"buffer":6}],21:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":19}],25:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":16}],22:[function(require,module,exports){
 exports = module.exports = require('./lib/_stream_readable.js');
 exports.Stream = require('stream');
 exports.Readable = exports;
@@ -4720,13 +4497,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":18,"./lib/_stream_passthrough.js":19,"./lib/_stream_readable.js":20,"./lib/_stream_transform.js":21,"./lib/_stream_writable.js":22,"stream":28}],26:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":15,"./lib/_stream_passthrough.js":16,"./lib/_stream_readable.js":17,"./lib/_stream_transform.js":18,"./lib/_stream_writable.js":19,"stream":25}],23:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":21}],27:[function(require,module,exports){
+},{"./lib/_stream_transform.js":18}],24:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":22}],28:[function(require,module,exports){
+},{"./lib/_stream_writable.js":19}],25:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4855,7 +4632,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":13,"inherits":14,"readable-stream/duplex.js":17,"readable-stream/passthrough.js":24,"readable-stream/readable.js":25,"readable-stream/transform.js":26,"readable-stream/writable.js":27}],29:[function(require,module,exports){
+},{"events":10,"inherits":11,"readable-stream/duplex.js":14,"readable-stream/passthrough.js":21,"readable-stream/readable.js":22,"readable-stream/transform.js":23,"readable-stream/writable.js":24}],26:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -5078,14 +4855,14 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":9}],30:[function(require,module,exports){
+},{"buffer":6}],27:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -5675,7 +5452,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":30,"_process":16,"inherits":14}],32:[function(require,module,exports){
+},{"./support/isBuffer":27,"_process":13,"inherits":11}],29:[function(require,module,exports){
 var memoize = require('meemo');
 
 function hashArgs () {
@@ -5838,7 +5615,48 @@ function expressions (notes, options) {
 
 module.exports = expressions;
 
-},{"meemo":33}],33:[function(require,module,exports){
+},{"meemo":32}],30:[function(require,module,exports){
+module.exports = Event
+
+function Event() {
+    var listeners = []
+
+    return { broadcast: broadcast, listen: event }
+
+    function broadcast(value) {
+        for (var i = 0; i < listeners.length; i++) {
+            listeners[i](value)
+        }
+    }
+
+    function event(listener) {
+        listeners.push(listener)
+
+        return removeListener
+
+        function removeListener() {
+            var index = listeners.indexOf(listener)
+            if (index !== -1) {
+                listeners.splice(index, 1)
+            }
+        }
+    }
+}
+
+},{}],31:[function(require,module,exports){
+var Event = require('./event.js')
+
+module.exports = Source
+
+function Source(broadcaster) {
+    var tuple = Event()
+
+    broadcaster(tuple.broadcast)
+
+    return tuple.listen
+}
+
+},{"./event.js":30}],32:[function(require,module,exports){
 /** Used as the `TypeError` message for "Functions" methods. */
 
 /** Used as the `TypeError` message for "Functions" methods. */
@@ -6002,7 +5820,181 @@ memoize.Cache = MapCache;
 
 module.exports = memoize;
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
+var Stream = require('stream')
+var Event = require('geval')
+
+var inherits = require('util').inherits
+
+module.exports = Bopper
+
+function Bopper(audioContext){
+  if (!(this instanceof Bopper)){
+    return new Bopper(audioContext)
+  }
+
+  var self = this
+
+  Stream.call(this)
+  this.readable = true
+  this.writable = false
+
+  this.context = audioContext
+  var processor = this._processor = audioContext.createScriptProcessor(512, 1, 1)
+
+  var handleTick = bopperTick.bind(this)
+  this._processor.onaudioprocess = handleTick
+
+  var tempo = 120
+  var cycleLength = (1 / audioContext.sampleRate) * this._processor.bufferSize
+
+  this._state = {
+    lastTo: 0,
+    lastEndTime: 0,
+    playing: false,
+    bpm: tempo,
+    beatDuration: 60 / tempo,
+    increment: (tempo / 60) * cycleLength,
+    cycleLength: cycleLength,
+    preCycle: 4,
+  }
+
+  // frp version
+  this.onSchedule = Event(function(broadcast){
+    self.on('data', broadcast)
+  })
+
+  processor.connect(audioContext.destination)
+}
+
+inherits(Bopper, Stream)
+
+var proto = Bopper.prototype
+
+
+proto.start = function(){
+  this._state.playing = true
+  this.emit('start')
+}
+
+proto.stop = function(){
+  this._state.playing = false
+  this.emit('stop')
+}
+
+proto.schedule = function(duration) {
+  var state = this._state
+  var currentTime = this.context.currentTime
+
+  var endTime = this.context.currentTime + duration
+  var time = state.lastEndTime
+
+  if (endTime >= time) {
+    state.lastEndTime = endTime
+
+    if (state.playing){
+      var duration = endTime - time
+      var length = duration / state.beatDuration
+
+      var from = state.lastTo
+      var to = from + length
+      state.lastTo = to
+
+      // skip if getting behind
+      //if ((currentTime - (state.cycleLength*3)) < time){
+        this._schedule(time, from, to)
+      //}
+    }
+  }
+
+}
+
+proto.setTempo = function(tempo){
+  var bps = tempo/60
+  var state = this._state
+  state.beatDuration = 60/tempo
+  state.increment = bps * state.cycleLength
+  state.bpm = tempo
+  this.emit('tempo', state.bpm)
+}
+
+proto.getTempo = function(){
+  return this._state.bpm
+}
+
+proto.isPlaying = function(){
+  return this._state.playing
+}
+
+proto.setPosition = function(position){
+  this._state.lastTo = parseFloat(position)
+}
+
+proto.setSpeed = function(multiplier){
+  var state = this._state
+
+  multiplier = parseFloat(multiplier) || 0
+
+  var tempo = state.bpm * multiplier
+  var bps = tempo/60
+
+  state.beatDuration = 60/tempo
+  state.increment = bps * state.cycleLength
+}
+
+
+proto.getPositionAt = function(time){
+  var state = this._state
+  var delta = state.lastEndTime - time
+  return state.lastTo - (delta / state.beatDuration)
+}
+
+proto.getTimeAt = function(position){
+  var state = this._state
+  var positionOffset = this.getCurrentPosition() - position
+  return this.context.currentTime - (positionOffset * state.beatDuration)
+}
+
+proto.getCurrentPosition = function(){
+  return this.getPositionAt(this.context.currentTime)
+}
+
+proto.getNextScheduleTime = function(){
+  var state = this._state
+  return state.lastEndTime
+}
+
+proto.getBeatDuration = function(){
+  var state = this._state
+  return state.beatDuration
+}
+
+var __data = {
+  from: 0,
+  to: 0,
+  time: 0,
+  duration: 0,
+  beatDuration: 0
+}
+
+proto._schedule = function(time, from, to){
+  var state = this._state
+  var duration = (to - from) * state.beatDuration
+  __data.from = from;
+  __data.to = to;
+  __data.time = time;
+  __data.duration = duration;
+  __data.beatDuration = state.beatDuration;
+
+  this.emit('data', __data);
+}
+
+function bopperTick(e){
+  var state = this._state
+  this.schedule(state.cycleLength * state.preCycle)
+}
+
+},{"geval":31,"stream":25,"util":28}],34:[function(require,module,exports){
 module.exports = Ditty
 
 var Stream = require('stream')
@@ -6201,4 +6193,4 @@ function shouldSendImmediately(message, loop){
   return message.event === 'stop' && (!loop || !loop.length)
 }
 
-},{"stream":28,"util":31}]},{},[1]);
+},{"stream":25,"util":28}]},{},[1]);
