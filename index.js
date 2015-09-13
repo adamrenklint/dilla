@@ -1,6 +1,6 @@
 var events = require('events');
 var inherits = require('util').inherits;
-var bopper = require('bopper');
+var bopper = require('./vendor/bopper');
 var ditty = require('./vendor/ditty');
 var expr = require('dilla-expressions');
 var memoize = require('meemo');

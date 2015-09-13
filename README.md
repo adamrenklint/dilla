@@ -195,6 +195,8 @@ dilla.on('step', function (step) {
 - **1.6.0**
   - CHANGED: Reduce intensity of keepalive pings to improve CPU performance
   - CHANGED: Memoize expensive methods
+- **1.7.0**
+  - CHANGED: Use forked version of Bopper, with less object creation
 
 ## License
 

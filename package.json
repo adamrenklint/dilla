@@ -1,6 +1,6 @@
 {
   "name": "dilla",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Schedule looped playback of Web Audio notes at 96 ticks per beat",
   "main": "index.js",
   "repository": {
@@ -25,8 +25,8 @@
   },
   "homepage": "https://github.com/adamrenklint/dilla",
   "dependencies": {
-    "bopper": "^2.8.0",
     "dilla-expressions": "^2.1.0",
+    "geval": "^2.1.1",
     "meemo": "^1.0.0"
   },
   "devDependencies": {
