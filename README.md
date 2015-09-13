@@ -192,6 +192,9 @@ dilla.on('step', function (step) {
 - **1.5.0**
   - CHANGED: Use dilla-expressions v2.0, with 25-1500 times better performance
   - FIXED: Use prefixed AudioContext in Safari
+- **1.6.0**
+  - CHANGED: Reduce intensity of keepalive pings to improve CPU performance
+  - CHANGED: Memoize expensive methods
 
 ## License
 
