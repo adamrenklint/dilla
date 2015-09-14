@@ -123,7 +123,7 @@ proto.emitStep = function emitStep (step) {
   this.emit('step', step);
 };
 
-proto.notesForSet = memoize(function notesForSet (id, notes) {
+proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLength) {
 
   var self = this;
   return self.expressions(notes.map(function (note) {
@@ -132,10 +132,10 @@ proto.notesForSet = memoize(function notesForSet (id, notes) {
     }
     return note;
   }), {
-    'beatsPerBar': this.beatsPerBar(),
-    'barsPerLoop': this.loopLength()
+    'beatsPerBar': beatsPerBar,
+    'barsPerLoop': loopLength
   }).filter(function (note) {
-    return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
+    return positionHelper.isPositionWithinBounds(note[0], loopLength, beatsPerBar);
   }).map(function (note) {
     if (self.expandNote) {
       note = self.expandNote(note);
@@ -143,8 +143,8 @@ proto.notesForSet = memoize(function notesForSet (id, notes) {
     var normal = positionHelper.normalizeNote(note);
     return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
-}, function (id, notes) {
-  return id + '//' + JSON.stringify(notes);
+}, function (id, notes, beatsPerBar, loopLength) {
+  return [id, JSON.stringify(notes), beatsPerBar, loopLength].join('//');
 });
 
 proto.set = function set (id, notes) {
@@ -156,7 +156,7 @@ proto.set = function set (id, notes) {
     throw new Error('Invalid argument: notes is not a valid array');
   }
 
-  this.scheduler.set(id, this.notesForSet(id, notes), this.beatsPerBar() * this.loopLength());
+  this.scheduler.set(id, this.notesForSet(id, notes, this.beatsPerBar(), this.loopLength()), this.beatsPerBar() * this.loopLength());
 };
 
 proto.get = function get (id) {

@@ -197,6 +197,9 @@ dilla.on('step', function (step) {
   - CHANGED: Memoize expensive methods
 - **1.7.0**
   - CHANGED: Use forked version of Bopper, with less object creation
+- **1.8.0-beta1**
+  - CHANGED: Memoize inner part of set method, for better performance and less allocation
+  - CHANGED: Use meeemo 1.1.1, which uses Map instead of plain object when possible
 
 ## License
 
