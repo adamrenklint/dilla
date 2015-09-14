@@ -25,17 +25,17 @@
   },
   "homepage": "https://github.com/adamrenklint/dilla",
   "dependencies": {
-    "dilla-expressions": "^2.1.0",
-    "geval": "^2.1.1",
-    "meemo": "^1.0.0"
+    "dilla-expressions": "2.1.1",
+    "geval": "2.1.1",
+    "meemo": "1.1.0"
   },
   "devDependencies": {
-    "beefy": "^2.1.3",
-    "browserify": "^10.0.0",
-    "chai": "^2.1.2",
+    "beefy": "2.1.3",
+    "browserify": "10.0.0",
+    "chai": "2.1.2",
     "codeclimate-test-reporter": "0.0.4",
-    "istanbul": "^0.3.8",
-    "jshint": "^2.6.3",
-    "mocha": "^2.2.1"
+    "istanbul": "0.3.8",
+    "jshint": "2.6.3",
+    "mocha": "2.2.1"
   }
 }
