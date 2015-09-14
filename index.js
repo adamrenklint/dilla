@@ -123,16 +123,10 @@ proto.emitStep = function emitStep (step) {
   this.emit('step', step);
 };
 
-proto.set = function set (id, notes) {
-  var self = this;
-  if (typeof id !== 'string') {
-    throw new Error('Invalid argument: id is not a valid string');
-  }
-  if (!notes || !Array.isArray(notes)) {
-    throw new Error('Invalid argument: notes is not a valid array');
-  }
+proto.notesForSet = memoize(function notesForSet (id, notes) {
 
-  notes = this.expressions(notes.map(function (note) {
+  var self = this;
+  return self.expressions(notes.map(function (note) {
     if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
       return [note.position, note];
     }
@@ -149,8 +143,20 @@ proto.set = function set (id, notes) {
     var normal = positionHelper.normalizeNote(note);
     return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
+}, function (id, notes) {
+  return id + '//' + JSON.stringify(notes);
+});
 
-  this.scheduler.set(id, notes, this.beatsPerBar() * this.loopLength());
+proto.set = function set (id, notes) {
+  var self = this;
+  if (typeof id !== 'string') {
+    throw new Error('Invalid argument: id is not a valid string');
+  }
+  if (!notes || !Array.isArray(notes)) {
+    throw new Error('Invalid argument: notes is not a valid array');
+  }
+
+  this.scheduler.set(id, this.notesForSet(id, notes), this.beatsPerBar() * this.loopLength());
 };
 
 proto.get = function get (id) {
