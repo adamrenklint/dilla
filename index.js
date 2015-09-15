@@ -126,23 +126,38 @@ proto.emitStep = function emitStep (step) {
 proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLength) {
 
   var self = this;
-  return self.expressions(notes.map(function (note) {
+  notes.forEach(function (note, index) {
     if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
-      return [note.position, note];
+      notes[index] = [note.position, note];
     }
-    return note;
-  }), {
+  });
+
+  notes = self.expressions(notes, {
     'beatsPerBar': beatsPerBar,
     'barsPerLoop': loopLength
-  }).filter(function (note) {
-    return positionHelper.isPositionWithinBounds(note[0], loopLength, beatsPerBar);
-  }).map(function (note) {
-    if (self.expandNote) {
-      note = self.expandNote(note);
-    }
-    var normal = positionHelper.normalizeNote(note);
-    return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
   });
+
+  var filtered = false;
+
+  notes.forEach(function (note, index) {
+    if (positionHelper.isPositionWithinBounds(note[0], loopLength, beatsPerBar)) {
+      if (self.expandNote) {
+        note = self.expandNote(note);
+      }
+      var normal = positionHelper.normalizeNote(note);
+      notes[index] = [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
+    }
+    else {
+      notes[index] = null;
+      filtered = true;
+    }
+  });
+
+  if (filtered) {
+    return notes.filter(function (note) { return !!note });
+  }
+
+  return notes;
 }, function (id, notes, beatsPerBar, loopLength) {
   return [id, JSON.stringify(notes), beatsPerBar, loopLength].join('//');
 });
