@@ -95,7 +95,7 @@ proto.write = function(obj){
   this._transform(obj)
 }
 
-proto._updateItemProperties = function(item, obj) {
+proto._updateItemProperties = function(i, item, obj) {
   var state = this._state
   var from = obj.from
   var to = obj.to
@@ -167,7 +167,7 @@ proto._transform = function(obj){
   var localQueue = []
 
   for (var i=queue.length-1;i>=0;i--){
-    this._updateItemProperties(queue[i], obj);
+    this._updateItemProperties(i, queue[i], obj);
   }
 
   for (var i=0;i<ids.length;i++){
