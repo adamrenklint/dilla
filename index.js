@@ -154,7 +154,7 @@ proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLe
   });
 
   if (filtered) {
-    return notes.filter(function (note) { return !!note });
+    return notes.filter(function (note) { return !!note; });
   }
 
   return notes;
