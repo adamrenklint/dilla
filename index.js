@@ -112,7 +112,7 @@ proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
 
 proto.emitStep = function emitStep (step) {
   var offset = step.offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
-  var note = step.args = step.args[0];
+  var note = step.args;
   step.time = step.time + offset;
   step.clockPosition = step.position;
   step.position = step.event === 'start' ? note.position : note.duration ?  this.getPositionWithOffset(note.position, note.duration) : note.position;
