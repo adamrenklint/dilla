@@ -10,6 +10,8 @@ var positionHelper = require('./lib/positionHelper');
 
 var loadTime = new Date().valueOf();
 
+var memoSpacer = '//';
+
 function Dilla (audioContext, options) {
 
   if (!(this instanceof Dilla)){
@@ -102,7 +104,7 @@ proto.getPositionWithOffset = memoize(function getPositionWithOffset (position, 
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
 }, function (position, offset) {
-  return position + '//' + offset;
+  return position + memoSpacer + offset;
 });
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
@@ -159,7 +161,7 @@ proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLe
 
   return notes;
 }, function (id, notes, beatsPerBar, loopLength) {
-  return [id, JSON.stringify(notes), beatsPerBar, loopLength].join('//');
+  return id + memoSpacer + JSON.stringify(notes) + memoSpacer + beatsPerBar + memoSpacer + loopLength;
 });
 
 proto.set = function set (id, notes) {
