@@ -1,6 +1,6 @@
 {
   "name": "dilla",
-  "version": "1.8.0-beta1",
+  "version": "1.8.0-beta2",
   "description": "Schedule looped playback of Web Audio notes at 96 ticks per beat",
   "main": "index.js",
   "repository": {
