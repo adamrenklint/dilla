@@ -70,8 +70,9 @@ proto.getIds = function(){
 proto.getDescriptors = function(){
   var state = this._state
   var result = []
-  for (var i=0;i<state.ids.length;i++){
-    var id = state.ids[i]
+  var id
+  for (var i=0,len=state.ids.length;i<len;i++){
+    id = state.ids[i]
     if (state.loops[id]){
       result.push({
         id: id,
@@ -165,26 +166,26 @@ proto._transform = function(obj){
   var ids = state.ids
   var queue = state.queue
   var localQueue = []
+  var id, events, loopLength, item;
 
   for (var i=queue.length-1;i>=0;i--){
     this._updateItemProperties(i, queue[i], obj);
   }
 
-  for (var i=0;i<ids.length;i++){
+  for (var j=0,jLen=ids.length;j<jLen;j++){
+    id = ids[j]
+    events = state.loops[id]
+    loopLength = state.lengths[id]
 
-    var id = ids[i]
-    var events = state.loops[id]
-    var loopLength = state.lengths[id]
-
-    for (var j=0;j<events.length;j++){
-      this._queueEvent(events[j], id, localQueue, loopLength, obj);
+    for (var k=0,kLen=events.length;k<kLen;k++){
+      this._queueEvent(events[k], id, localQueue, loopLength, obj);
     }
   }
 
   // ensure events stream in time sequence
   // localQueue.sort(compare)
-  for (var i=0;i<localQueue.length;i++){
-    var item = localQueue[i]
+  for (var l=0,lLen=localQueue.length;l<lLen;l++){
+    item = localQueue[l]
     if (item.time < nextTime){
       // if (window.performance.now() < endAt){
         this.push(item)
@@ -201,9 +202,9 @@ function compare(a,b){
 }
 
 function getAbsolutePosition(pos, start, length){
-  pos = pos % length
+  var localPos = pos % length
   var micro = start % length
-  var position = start+pos-micro
+  var position = start+localPos-micro
   if (position < start){
     return position + length
   } else {
