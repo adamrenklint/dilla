@@ -19,7 +19,7 @@ watch:
 	@$(MOCHA) -w -s 10
 
 coverage:
-	@$(ISTANBUL) cover $(_MOCHA) -x vendor/*.js -- test/*.test.js -R dot
+	@$(ISTANBUL) cover $(_MOCHA) -x "vendor/*.js" -- test/*.test.js -R dot
 
 check-coverage: coverage
 	@$(ISTANBUL) check-coverage --statement $(COVERAGE_LIMIT) --branch $(COVERAGE_LIMIT) --function $(COVERAGE_LIMIT)

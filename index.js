@@ -10,6 +10,8 @@ var positionHelper = require('./lib/positionHelper');
 
 var loadTime = new Date().valueOf();
 
+var memoSpacer = '//';
+
 function Dilla (audioContext, options) {
 
   if (!(this instanceof Dilla)){
@@ -102,7 +104,7 @@ proto.getPositionWithOffset = memoize(function getPositionWithOffset (position, 
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
 }, function (position, offset) {
-  return position + '//' + offset;
+  return position + memoSpacer + offset;
 });
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
@@ -112,7 +114,7 @@ proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
 
 proto.emitStep = function emitStep (step) {
   var offset = step.offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
-  var note = step.args = step.args[0];
+  var note = step.args;
   step.time = step.time + offset;
   step.clockPosition = step.position;
   step.position = step.event === 'start' ? note.position : note.duration ?  this.getPositionWithOffset(note.position, note.duration) : note.position;
@@ -123,6 +125,45 @@ proto.emitStep = function emitStep (step) {
   this.emit('step', step);
 };
 
+proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLength) {
+
+  var self = this;
+  notes.forEach(function (note, index) {
+    if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
+      notes[index] = [note.position, note];
+    }
+  });
+
+  notes = self.expressions(notes, {
+    'beatsPerBar': beatsPerBar,
+    'barsPerLoop': loopLength
+  });
+
+  var filtered = false;
+
+  notes.forEach(function (note, index) {
+    if (positionHelper.isPositionWithinBounds(note[0], loopLength, beatsPerBar)) {
+      if (self.expandNote) {
+        note = self.expandNote(note);
+      }
+      var normal = positionHelper.normalizeNote(note);
+      notes[index] = [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
+    }
+    else {
+      notes[index] = null;
+      filtered = true;
+    }
+  });
+
+  if (filtered) {
+    return notes.filter(function (note) { return !!note; });
+  }
+
+  return notes;
+}, function (id, notes, beatsPerBar, loopLength) {
+  return id + memoSpacer + JSON.stringify(notes) + memoSpacer + beatsPerBar + memoSpacer + loopLength;
+});
+
 proto.set = function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') {
@@ -132,25 +173,7 @@ proto.set = function set (id, notes) {
     throw new Error('Invalid argument: notes is not a valid array');
   }
 
-  notes = this.expressions(notes.map(function (note) {
-    if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
-      return [note.position, note];
-    }
-    return note;
-  }), {
-    'beatsPerBar': this.beatsPerBar(),
-    'barsPerLoop': this.loopLength()
-  }).filter(function (note) {
-    return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
-  }).map(function (note) {
-    if (self.expandNote) {
-      note = self.expandNote(note);
-    }
-    var normal = positionHelper.normalizeNote(note);
-    return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
-  });
-
-  this.scheduler.set(id, notes, this.beatsPerBar() * this.loopLength());
+  this.scheduler.set(id, this.notesForSet(id, notes, this.beatsPerBar(), this.loopLength()), this.beatsPerBar() * this.loopLength());
 };
 
 proto.get = function get (id) {
