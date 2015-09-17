@@ -59,6 +59,8 @@ var positionHelper = require('./lib/positionHelper');
 
 var loadTime = new Date().valueOf();
 
+var memoSpacer = '//';
+
 function Dilla (audioContext, options) {
 
   if (!(this instanceof Dilla)){
@@ -151,7 +153,7 @@ proto.getPositionWithOffset = memoize(function getPositionWithOffset (position, 
   var clockOffset = offset / 96;
   return this.getPositionFromClockPosition(clockPosition + clockOffset);
 }, function (position, offset) {
-  return position + '//' + offset;
+  return position + memoSpacer + offset;
 });
 
 proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
@@ -161,7 +163,7 @@ proto.getDurationFromTicks = function getDurationFromTicks (ticks) {
 
 proto.emitStep = function emitStep (step) {
   var offset = step.offset = (this.clock._state.cycleLength * this.clock._state.preCycle) * 1;
-  var note = step.args = step.args[0];
+  var note = step.args;
   step.time = step.time + offset;
   step.clockPosition = step.position;
   step.position = step.event === 'start' ? note.position : note.duration ?  this.getPositionWithOffset(note.position, note.duration) : note.position;
@@ -172,6 +174,45 @@ proto.emitStep = function emitStep (step) {
   this.emit('step', step);
 };
 
+proto.notesForSet = memoize(function notesForSet (id, notes, beatsPerBar, loopLength) {
+
+  var self = this;
+  notes.forEach(function (note, index) {
+    if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
+      notes[index] = [note.position, note];
+    }
+  });
+
+  notes = self.expressions(notes, {
+    'beatsPerBar': beatsPerBar,
+    'barsPerLoop': loopLength
+  });
+
+  var filtered = false;
+
+  notes.forEach(function (note, index) {
+    if (positionHelper.isPositionWithinBounds(note[0], loopLength, beatsPerBar)) {
+      if (self.expandNote) {
+        note = self.expandNote(note);
+      }
+      var normal = positionHelper.normalizeNote(note);
+      notes[index] = [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
+    }
+    else {
+      notes[index] = null;
+      filtered = true;
+    }
+  });
+
+  if (filtered) {
+    return notes.filter(function (note) { return !!note; });
+  }
+
+  return notes;
+}, function (id, notes, beatsPerBar, loopLength) {
+  return id + memoSpacer + JSON.stringify(notes) + memoSpacer + beatsPerBar + memoSpacer + loopLength;
+});
+
 proto.set = function set (id, notes) {
   var self = this;
   if (typeof id !== 'string') {
@@ -181,25 +222,7 @@ proto.set = function set (id, notes) {
     throw new Error('Invalid argument: notes is not a valid array');
   }
 
-  notes = this.expressions(notes.map(function (note) {
-    if (!Array.isArray(note) && typeof note === 'object' && !!note.position) {
-      return [note.position, note];
-    }
-    return note;
-  }), {
-    'beatsPerBar': this.beatsPerBar(),
-    'barsPerLoop': this.loopLength()
-  }).filter(function (note) {
-    return positionHelper.isPositionWithinBounds(note[0], self.loopLength(), self.beatsPerBar());
-  }).map(function (note) {
-    if (self.expandNote) {
-      note = self.expandNote(note);
-    }
-    var normal = positionHelper.normalizeNote(note);
-    return [self.getClockPositionFromPosition(normal.position), self.getDurationFromTicks(normal.duration || 0), null, null, normal];
-  });
-
-  this.scheduler.set(id, notes, this.beatsPerBar() * this.loopLength());
+  this.scheduler.set(id, this.notesForSet(id, notes, this.beatsPerBar(), this.loopLength()), this.beatsPerBar() * this.loopLength());
 };
 
 proto.get = function get (id) {
@@ -310,7 +333,7 @@ proto.setLoopLength = function setLoopLength (bars) {
 
 module.exports = Dilla;
 
-},{"./lib/checkValid":3,"./lib/positionHelper":4,"./vendor/bopper":33,"./vendor/ditty":34,"dilla-expressions":29,"events":10,"meemo":32,"util":28}],3:[function(require,module,exports){
+},{"./lib/checkValid":3,"./lib/positionHelper":4,"./vendor/bopper":34,"./vendor/ditty":35,"dilla-expressions":29,"events":10,"meemo":32,"util":28}],3:[function(require,module,exports){
 var checkValid = {
 
   'number': function checkValidNumber (name, value) {
@@ -5657,6 +5680,8 @@ function Source(broadcaster) {
 }
 
 },{"./event.js":30}],32:[function(require,module,exports){
+var global = require('./lib/global');
+
 /** Used as the `TypeError` message for "Functions" methods. */
 
 /** Used as the `TypeError` message for "Functions" methods. */
@@ -5794,7 +5819,6 @@ function memoize(func, resolver) {
   var args, key, cache;
   var memoized = function() {
     args = arguments;
-    // key = Symbol.for(resolver ? resolver.apply(this, args) : args[0]);
     key = resolver ? resolver.apply(this, args) : args[0];
     cache = memoized.cache;
 
@@ -5816,11 +5840,22 @@ MapCache.prototype.has = mapHas;
 MapCache.prototype.set = mapSet;
 
 // Assign cache to `_.memoize`.
-memoize.Cache = MapCache;
+memoize.Cache = global.Map || MapCache;
 
 module.exports = memoize;
 
-},{}],33:[function(require,module,exports){
+},{"./lib/global":33}],33:[function(require,module,exports){
+(function (global){
+if (typeof window !== 'undefined') {
+  module.exports = window;
+} else if (typeof global !== 'undefined') {
+  module.exports = global;
+} else if (typeof self !== 'undefined'){
+  module.exports = self;
+}
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],34:[function(require,module,exports){
 var Stream = require('stream')
 var Event = require('geval')
 
@@ -5994,7 +6029,7 @@ function bopperTick(e){
   this.schedule(state.cycleLength * state.preCycle)
 }
 
-},{"geval":31,"stream":25,"util":28}],34:[function(require,module,exports){
+},{"geval":31,"stream":25,"util":28}],35:[function(require,module,exports){
 module.exports = Ditty
 
 var Stream = require('stream')
@@ -6067,8 +6102,9 @@ proto.getIds = function(){
 proto.getDescriptors = function(){
   var state = this._state
   var result = []
-  for (var i=0;i<state.ids.length;i++){
-    var id = state.ids[i]
+  var id
+  for (var i=0,len=state.ids.length;i<len;i++){
+    id = state.ids[i]
     if (state.loops[id]){
       result.push({
         id: id,
@@ -6092,6 +6128,63 @@ proto.write = function(obj){
   this._transform(obj)
 }
 
+proto._updateItemProperties = function(i, item, obj) {
+  var state = this._state
+  var from = obj.from
+  var to = obj.to
+  var time = obj.time
+  var nextTime = obj.time + obj.duration
+  var beatDuration = obj.beatDuration
+  var queue = state.queue
+
+  if (to > item.position || shouldSendImmediately(item, state.loops[item.id])){
+    if (to > item.position){
+      var delta = (item.position - from) * beatDuration
+      item.time = time + delta
+    } else {
+      item.time = time
+      item.position = from
+    }
+    queue.splice(i, 1)
+    this.push(item)
+  }
+};
+
+proto._queueEvent = function(event, id, localQueue, loopLength, obj) {
+  var from = obj.from
+  var to = obj.to
+  var time = obj.time
+  var beatDuration = obj.beatDuration
+  var startPosition = getAbsolutePosition(event[0], from, loopLength)
+  var endPosition = startPosition + event[1]
+
+  if (startPosition >= from && startPosition < to){
+
+    var delta = (startPosition - from) * beatDuration
+    var duration = event[1] * beatDuration
+    var startTime = time + delta
+    var endTime = startTime + duration
+
+    localQueue.push({
+      id: id,
+      event: 'start',
+      position: startPosition,
+      args: event[4],
+      time: startTime
+    })
+
+    if (duration) {
+      localQueue.push({
+        id: id,
+        event: 'stop',
+        position: endPosition,
+        args: event[4],
+        time: endTime
+      })
+    }
+  }
+}
+
 proto._transform = function(obj){
   var begin = window.performance.now()
   var endAt = begin + (obj.duration * 5000)
@@ -6105,68 +6198,30 @@ proto._transform = function(obj){
   var ids = state.ids
   var queue = state.queue
   var localQueue = []
+  var id, events, loopLength, item;
 
   for (var i=queue.length-1;i>=0;i--){
-    var item = queue[i]
-    if (to > item.position || shouldSendImmediately(item, state.loops[item.id])){
-      if (to > item.position){
-        var delta = (item.position - from) * beatDuration
-        item.time = time + delta
-      } else {
-        item.time = time
-        item.position = from
-      }
-      queue.splice(i, 1)
-      this.push(item)
-    }
+    this._updateItemProperties(i, queue[i], obj);
   }
 
-  for (var i=0;i<ids.length;i++){
+  for (var j=0,jLen=ids.length;j<jLen;j++){
+    id = ids[j]
+    events = state.loops[id]
+    loopLength = state.lengths[id]
 
-    var id = ids[i]
-    var events = state.loops[id]
-    var loopLength = state.lengths[id]
-
-    for (var j=0;j<events.length;j++){
-
-      var event = events[j]
-      var startPosition = getAbsolutePosition(event[0], from, loopLength)
-      var endPosition = startPosition + event[1]
-
-      if (startPosition >= from && startPosition < to){
-
-        var delta = (startPosition - from) * beatDuration
-        var duration = event[1] * beatDuration
-        var startTime = time + delta
-        var endTime = startTime + duration
-
-        localQueue.push({
-          id: id,
-          event: 'start',
-          position: startPosition,
-          args: event.slice(4),
-          time: startTime
-        })
-
-        localQueue.push({
-          id: id,
-          event: 'stop',
-          position: endPosition,
-          args: event.slice(4),
-          time: endTime
-        })
-      }
+    for (var k=0,kLen=events.length;k<kLen;k++){
+      this._queueEvent(events[k], id, localQueue, loopLength, obj);
     }
   }
 
   // ensure events stream in time sequence
-  localQueue.sort(compare)
-  for (var i=0;i<localQueue.length;i++){
-    var item = localQueue[i]
+  // localQueue.sort(compare)
+  for (var l=0,lLen=localQueue.length;l<lLen;l++){
+    item = localQueue[l]
     if (item.time < nextTime){
-      if (window.performance.now() < endAt){
+      // if (window.performance.now() < endAt){
         this.push(item)
-      }
+      // }
     } else {
       // queue event for later
       queue.push(item)
@@ -6179,9 +6234,9 @@ function compare(a,b){
 }
 
 function getAbsolutePosition(pos, start, length){
-  pos = pos % length
+  var localPos = pos % length
   var micro = start % length
-  var position = start+pos-micro
+  var position = start+localPos-micro
   if (position < start){
     return position + length
   } else {
