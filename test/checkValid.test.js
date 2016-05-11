@@ -19,6 +19,8 @@ describe('lib/checkValid', function () {
         expect(checkValid.positionString('1.1.01')).to.equal(true);
         expect(checkValid.positionString('1.1.1')).to.equal(true);
         expect(checkValid.positionString('1.1.96')).to.equal(true);
+        expect(checkValid.positionString('1.10.96')).to.equal(true);
+        expect(checkValid.positionString('11.1.96')).to.equal(true);
       });
     });
   });
