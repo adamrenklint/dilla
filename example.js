@@ -11,9 +11,7 @@ var low = { 'freq': 330, 'duration': 15 };
 
 dilla.set('metronome', [
   high,
-  ['*.2.01', low],
-  ['*.3.01', low],
-  ['*.4.01', low]
+  ['*.>1.01', low]
 ]);
 
 function draw () {

@@ -48,9 +48,7 @@ var low = { 'freq': 330, 'duration': 15 };
 
 dilla.set('metronome', [
   high,
-  ['*.2.01', low],
-  ['*.3.01', low],
-  ['*.4.01', low]
+  ['*.>1.01', low]
 ]);
 
 var oscillator, gainNode;
@@ -201,6 +199,8 @@ dilla.on('step', function (step) {
   - CHANGED: Memoize inner part of set method, for better performance and less allocation
   - CHANGED: Use meeemo 1.1.1, which uses Map instead of plain object when possible
   - CHANGED: Refactor ditty to avoid deoptimization of inner loop bodies
+- **1.8.1**
+  - FIXED: Drops notes when `beatsPerBar` is above 9 [#22](https://github.com/adamrenklint/dilla/issues/22)
 
 ## License
 
