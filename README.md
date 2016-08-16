@@ -201,6 +201,8 @@ dilla.on('step', function (step) {
   - CHANGED: Refactor ditty to avoid deoptimization of inner loop bodies
 - **1.8.1**
   - FIXED: Drops notes when `beatsPerBar` is above 9 [#22](https://github.com/adamrenklint/dilla/issues/22)
+- **1.8.2**
+  - FIXED: Changing beats per bar leads to confusion in the order of the steps [#23](https://github.com/adamrenklint/dilla/issues/23)
 
 ## License
 
