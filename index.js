@@ -88,6 +88,8 @@ proto.getClockPositionFromPosition = memoize(function getClockPositionFromPositi
   var beats = parseInt(parts[1], 10) - 1;
   var ticks = parseInt(parts[2], 10) - 1;
   return (bars * beatsPerBar) + beats + (ticks / 96);
+}, function(position, beatsPerBar){
+  return position + memoSpacer + beatsPerBar;
 });
 
 proto.getPositionWithOffset = function getPositionWithOffset (position, offset) {
