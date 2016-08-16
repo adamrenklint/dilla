@@ -262,6 +262,21 @@ describe('dilla.getPositionFromClockPosition (clockPosition)', function () {
   });
 });
 
+describe('dilla.getClockPositionFromPosition', function () {
+  it('should return the correct clock position', () => {
+    expect(dilla.getClockPositionFromPosition('1.1.01', 4)).to.equal(0)
+    expect(dilla.getClockPositionFromPosition('1.3.01', 4)).to.equal(2)
+    expect(dilla.getClockPositionFromPosition('3.1.01', 4)).to.equal(8)
+    expect(dilla.getClockPositionFromPosition('3.2.49', 4)).to.equal(9.5)
+  })
+  describe('when beatsPerBar changes from the last call', () => {
+    it('should return the correct clock position', () => {
+      expect(dilla.getClockPositionFromPosition('3.1.01', 4)).to.equal(8)
+      expect(dilla.getClockPositionFromPosition('3.1.01', 3)).to.equal(6)
+    })
+  })
+});
+
 describe('dilla.getPositionWithOffset (position, offset)', function () {
   describe('when position is not a valid position string', function () {
     it('should throw an error', function () {
