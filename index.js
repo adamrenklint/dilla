@@ -33,12 +33,13 @@ function Dilla (audioContext, options) {
   this.expressions = expr;
   this.expandNote = options.expandNote;
 
+  this._position = '0.0.00';
+  this._notes = {};
+
   this.upstartWait = options.upstartWait || 250;
   this.setTempo(options.tempo || 120);
   this.setBeatsPerBar(options.beatsPerBar || 4);
   this.setLoopLength(options.loopLength || 2);
-
-  this._position = '0.0.00';
 
   this.clock.on('data', this.updatePositionFromClock.bind(this));
   this.clock.pipe(this.scheduler).on('data', this.emitStep.bind(this));
@@ -179,6 +180,7 @@ proto.set = function set (id, notes) {
     throw new Error('Invalid argument: notes is not a valid array');
   }
 
+  this._notes[id] = notes;
   this.scheduler.set(id, this.notesForSet(id, notes, this.beatsPerBar(), this.loopLength()), this.beatsPerBar() * this.loopLength());
 };
 
@@ -202,6 +204,7 @@ proto.clear = function clear (id) {
       throw new Error('Invalid argument: id is not a valid string');
     }
     this.set(id, []);
+    delete this._notes[id];
   }
   else {
     this.scheduler.getIds().forEach(function (id) {
@@ -277,6 +280,7 @@ proto.beatsPerBar = function beatsPerBar () {
 proto.setBeatsPerBar = function setBeatsPerBar (beats) {
   checkValid.positiveNumber('beats', beats);
   this._beatsPerBar = beats;
+  this.updateScheduler();
 };
 
 proto.loopLength = function loopLength () {
@@ -286,6 +290,14 @@ proto.loopLength = function loopLength () {
 proto.setLoopLength = function setLoopLength (bars) {
   checkValid.positiveNumber('bars', bars);
   this._loopLength = bars;
+  this.updateScheduler();
+};
+
+proto.updateScheduler = function updateScheduler () {
+  var self = this;
+  Object.keys(self._notes).forEach(function (id) {
+    self.set(id, self._notes[id]);
+  });
 };
 
 module.exports = Dilla;

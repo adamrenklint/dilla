@@ -203,8 +203,10 @@ dilla.on('step', function (step) {
   - FIXED: Drops notes when `beatsPerBar` is above 9 [#22](https://github.com/adamrenklint/dilla/issues/22)
 - **1.8.2**
   - FIXED: Changing beats per bar leads to confusion in the order of the steps [#23](https://github.com/adamrenklint/dilla/issues/23)
-  - **1.8.2**
+- **1.8.3**
   - FIXED: Correct memoization key for dilla.getClockPositionFromPosition [#23](https://github.com/adamrenklint/dilla/issues/23)
+- **1.8.4** (2017-12-14)
+  - FIXED: setBeatsPerBar not working [#26](https://github.com/adamrenklint/dilla/issues/26)
 
 ## License
 
